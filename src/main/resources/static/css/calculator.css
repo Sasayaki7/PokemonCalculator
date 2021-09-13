@@ -1,0 +1,46 @@
+@charset "ISO-8859-1";
+
+.invisible{
+	display: none;
+}
+
+.short-number{
+	width: 60px;
+}
+
+.conditions{
+	display: flex;
+	border: groove white 2px;
+	flex-direction: column;
+	
+}
+
+body{
+	background-color: black;
+	color: white;	
+}
+
+input{
+	background-color: #444444;
+	color: white;
+}
+
+.add-button{
+	height: 60px;
+	width: 60px;
+}
+
+.opp-pokemon{
+	height: 100px;
+	width: 100px;
+}
+
+.delete-button{
+	height: 60px;
+	width: 60px;
+}
+
+.cells{
+	display: flex;
+	gap: 5px;
+}

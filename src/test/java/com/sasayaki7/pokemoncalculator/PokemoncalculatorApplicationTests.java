@@ -1,0 +1,13 @@
+package com.sasayaki7.pokemoncalculator;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class PokemoncalculatorApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}
