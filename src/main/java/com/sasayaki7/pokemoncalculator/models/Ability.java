@@ -41,6 +41,17 @@ public class Ability {
 		this.identifier = name;
 	}
 
+	public String getIdentifierCleaned() {
+		String repS = identifier.replace('-', ' ');
+		repS = repS.substring(0, 1).toUpperCase()+repS.substring(1);
+		for(int i = 1; i < repS.length(); i++) {
+			if (repS.charAt(i) == ' ') {
+				repS = repS.substring(0, i+1)+repS.substring(i+1, i+2).toUpperCase()+repS.substring(i+2);
+			}
+		}
+		return repS;
+	}
+	
 	public Long getId() {
 		return id;
 	}

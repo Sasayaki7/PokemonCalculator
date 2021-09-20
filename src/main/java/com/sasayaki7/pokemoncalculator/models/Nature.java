@@ -43,6 +43,10 @@ public class Nature {
 		this.identifier = identifer;
 	}
 
+	public String getIdentifierCleaned() {
+		return identifier.substring(0, 1).toUpperCase()+identifier.substring(1);
+	}
+	
 	public Stat getDecreasedStat() {
 		return decreasedStat;
 	}

@@ -1,0 +1,33 @@
+@charset "ISO-8859-1";
+
+
+body{
+	background-color: black;
+	color: white;	
+}
+
+.condition-ok{
+	background: rgba(25, 255, 25, 0.3);
+}
+
+.condition-ng{
+	background: rgba(255, 25, 25, 0.3);
+}
+
+.condition{
+	border: solid white 1px;
+}
+
+.condition-display{
+	border: double white 2px;
+}
+
+
+.left-side{
+	display: flex;
+	flex-direction: column;
+}
+
+.pokemon-info{
+	display: flex;
+}

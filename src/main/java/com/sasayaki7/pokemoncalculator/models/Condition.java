@@ -7,19 +7,32 @@ public class Condition {
 	private String terrain;
 	private String weather;
 	private Move move;
+	private int generation;
 	private boolean screens;
 	private double oppBoost;
 	private double yourBoost;
+	private String rawBoost;
+	private String rawOppBoost;
+	private String summary;
 	private boolean isDoubles;
-	private boolean helpingHand;
-	private boolean friendGuard;
-	private boolean rivalry;
-	private boolean fairyAura;
-	private boolean darkAura;
-	private boolean auraBreak;
-	private boolean neutralizingGas;
-	private boolean isCritical;
+	private boolean helpingHand=false;
+	private boolean friendGuard=false;
+	private boolean rivalry=false;
+	private boolean fairyAura=false;
+	private boolean darkAura=false;
+	private boolean auraBreak=false;
+	private boolean neutralizingGas=false;
+	private boolean isCritical=false;
 	private double health;
+	private boolean battery=false;
+	private boolean flowerGift=false;
+	private boolean powerSpot=false;
+	private boolean yourTw=false;
+	private boolean foeTw=false;
+	private boolean charge=false;
+	private boolean gravity=false;
+	private boolean flashFire=false;
+
 	
 	public Condition() {
 	}
@@ -78,6 +91,16 @@ public class Condition {
 	public double getOppBoost() {
 		return oppBoost;
 	}
+	
+
+	public String getSummary() {
+		return summary;
+	}
+
+
+	public void setSummary(String summary) {
+		this.summary = summary;
+	}
 
 
 	public void setOppBoost(double oppBoost) {
@@ -85,6 +108,8 @@ public class Condition {
 	}
 
 	public void setOppBoost(String yourBoost) {
+		this.rawOppBoost = yourBoost;
+
 		if (yourBoost.equals("0")) {
 			this.oppBoost =  1.0;
 		}
@@ -137,6 +162,7 @@ public class Condition {
 	}
 	
 	public void setYourBoost(String yourBoost) {
+		this.rawBoost = yourBoost;
 		if (yourBoost.equals("0")) {
 			this.yourBoost =  1.0;
 		}
@@ -176,6 +202,27 @@ public class Condition {
 		else{
 			this.yourBoost =  0.25;
 		}
+	}
+
+	
+
+	public String getRawBoost() {
+		return rawBoost;
+	}
+
+
+	public void setRawBoost(String rawBoost) {
+		this.rawBoost = rawBoost;
+	}
+
+
+	public String getRawOppBoost() {
+		return rawOppBoost;
+	}
+
+
+	public void setRawOppBoost(String rawOppBoost) {
+		this.rawOppBoost = rawOppBoost;
 	}
 
 
@@ -286,6 +333,96 @@ public class Condition {
 
 	public void setHealth(double health) {
 		this.health = health;
+	}
+
+
+	public boolean isBattery() {
+		return battery;
+	}
+
+
+	public void setBattery(boolean battery) {
+		this.battery = battery;
+	}
+
+
+	public boolean isFlowerGift() {
+		return flowerGift;
+	}
+
+
+	public void setFlowerGift(boolean flowerGift) {
+		this.flowerGift = flowerGift;
+	}
+
+
+	public boolean isPowerSpot() {
+		return powerSpot;
+	}
+
+
+	public void setPowerSpot(boolean powerSpot) {
+		this.powerSpot = powerSpot;
+	}
+
+
+	public boolean isYourTw() {
+		return yourTw;
+	}
+
+
+	public void setYourTw(boolean yourTw) {
+		this.yourTw = yourTw;
+	}
+
+
+	public boolean isFoeTw() {
+		return foeTw;
+	}
+
+
+	public void setFoeTw(boolean foeTw) {
+		this.foeTw = foeTw;
+	}
+
+
+	public int getGeneration() {
+		return generation;
+	}
+
+
+	public void setGeneration(int generation) {
+		this.generation = generation;
+	}
+
+
+	public boolean isCharge() {
+		return charge;
+	}
+
+
+	public void setCharge(boolean charge) {
+		this.charge = charge;
+	}
+
+
+	public boolean isGravity() {
+		return gravity;
+	}
+
+
+	public void setGravity(boolean gravity) {
+		this.gravity = gravity;
+	}
+
+
+	public boolean isFlashFire() {
+		return flashFire;
+	}
+
+
+	public void setFlashFire(boolean flashfire) {
+		this.flashFire = flashfire;
 	}
 	
 	

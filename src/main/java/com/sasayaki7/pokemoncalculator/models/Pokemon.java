@@ -53,6 +53,9 @@ public class Pokemon {
 	@Transient
 	private Nature nature;
 	
+	@Transient
+	private String status;
+	
 	public Pokemon() {
 	}
 	
@@ -67,6 +70,49 @@ public class Pokemon {
 
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
+	}
+	
+	
+	public String getIdentifierCleaned() {
+		return identifier.substring(0, 1).toUpperCase()+identifier.substring(1);
+	}
+	
+	public String getIdentifierNoSpace() {
+		if (identifier.indexOf("tapu") != -1) {
+			return identifier.replace(" ", "");
+		}
+		else if (identifier.equals("type-null")||identifier.equals("mr-rime")||identifier.equals("mime-jr")) {
+			return identifier.replace("-", "");
+		}
+		else if (identifier.indexOf("mr-mime") != -1) {
+			return identifier.replace("mr-mime", "mrmime").replace('-', ' ');
+		}
+		else if (identifier.indexOf("mega-x") != -1) {
+			return identifier.replace("mega-x", "megax").replace('-', ' ');
+		}
+		else if (identifier.indexOf("mega-y") != -1) {
+			return identifier.replace("mega-y", "megay").replace('-', ' ');
+		}
+		else if (identifier.indexOf("rapid-strike") != -1) {
+			return identifier.replace("rapid-strike", "rapidstrike").replace('-', ' ');
+		}
+		else if (identifier.indexOf("single-strike") != -1) {
+			return identifier.replace("single-strike", "singlestrike").replace('-', ' ');
+		}
+		else {
+			return identifier.replace('-', ' ');
+		}
+	}
+	
+	public String getItemCleaned() {
+		String repS = item.replace('-', ' ');
+		repS = repS.substring(0, 1).toUpperCase()+repS.substring(1);
+		for(int i = 1; i < repS.length(); i++) {
+			if (repS.charAt(i) == ' ') {
+				repS = repS.substring(0, i+1)+repS.substring(i+1, i+2).toUpperCase()+repS.substring(i+2);
+			}
+		}
+		return repS;
 	}
 
 	public Long getId() {
@@ -167,6 +213,15 @@ public class Pokemon {
 	}
 	
 	
+	
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
 	public double getEffectivenessFrom(Type t) {
 		double init = 1.0;
 		for (Type x: this.types) {

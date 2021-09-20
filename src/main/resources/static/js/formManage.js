@@ -54,6 +54,108 @@ function removeDash(s){
 	return arrS.join(" ")
 }
 
+function clearAutoCompleteList(div){
+	while (div.firstChild){
+		div.removeChild(div.firstChild);
+	}
+}
+
+function clearAutoCompleteFromNode(div){
+	clearAutoCompleteList(div.parentNode.querySelector('.item-autocomplete'));
+}
+
+function createListOfAutoComplete(list, div){
+	let html = "";
+	let counter = 0;
+	clearAutoCompleteList(div)
+	for (let item of list){
+		let newToggle = document.createElement("div");
+		newToggle.setAttribute("class", "autocomplete-item")
+		newToggle.innerHTML = item;
+		newToggle.classList.add("autocomplete-selector")
+
+		newToggle.addEventListener("click", function(e){
+			let elem = div.parentNode.querySelector("input")
+			elem.value = removeDash(item)
+			if (elem.name.includes("calcpokemon")){
+				getImageForPokemon(elem);
+			}
+			else if (elem.name.includes("pokemon")){
+				changeOppPokemon(elem);
+			}
+			else if (elem.name == "item"){
+				changeItemForPokemon(elem)
+			}
+			else if (elem.name.includes("item")){
+				changeItemForOppPokemon(elem)
+			}
+			clearAutoCompleteList(div)
+		})
+		div.appendChild(newToggle);
+		counter ++;
+		if (counter > 5){
+			break;
+		}
+	}
+}
+
+
+function getMovesStartingWith(s, node){
+	fetch(`http://localhost:8080/api/moves?startWith=${s}`)
+		.then(resp => resp.json())
+		.then(resp => {
+			createListOfAutoComplete(resp, node.parentNode.querySelector('.item-autocomplete'))
+		})
+}
+
+
+function getPokemonStartingWith(s, node){
+	console.log(s)
+	fetch(`http://localhost:8080/api/pokemon?startWith=${s}`)
+		.then(resp => resp.json())
+		.then(resp => {
+			createListOfAutoComplete(resp, node.parentNode.querySelector('.item-autocomplete'))
+		})
+}
+
+
+
+function getItemsStartingWith(s, node){
+	fetch(`http://localhost:8080/api/items?startWith=${s}`)
+		.then(resp => resp.json())
+		.then(resp => {
+			createListOfAutoComplete(resp, node.parentNode.querySelector('.item-autocomplete'))
+		})
+}
+
+
+function autoComplete(node){
+	let str = node.value
+	console.log(str);
+	if (node.name.includes("pokemon")){
+		getPokemonStartingWith(str, node);
+	}
+	else if (node.name.includes("move")){
+		getMovesStartingWith(str, node);
+	}
+	else if (node.name.includes("item")){
+		getItemsStartingWith(str, node)
+	}
+}
+
+function changeTypes(node, list){
+	while (node.firstChild){
+		node.removeChild(node.firstChild);
+	}
+	for (let type of list){
+		let image = document.createElement("img");
+		image.setAttribute("src", `https://www.serebii.net/pokedex-bw/type/${type.type.name}.gif`)
+		node.appendChild(image);
+	}
+
+}
+
+
 function getImageForPokemon(e){
 	let cleansedText = cleanseText(e.value)
 	fetch(`https://pokeapi.co/api/v2/pokemon/${cleansedText}`)
@@ -63,48 +165,24 @@ function getImageForPokemon(e){
 			for(let abil in resp.abilities){
 				html += `<option ${abil==0?'selected' : ''} value=${resp.abilities[abil].ability.name}>${removeDash(resp.abilities[abil].ability.name)}</option>`
 			}
-			e.parentNode.parentNode.querySelector(".your-ability").innerHTML=html
+			changeTypes(e.parentNode.parentNode.parentNode.querySelector('.type-pokemon'), resp.types);
+			e.parentNode.parentNode.parentNode.querySelector(".your-ability").innerHTML=html
 		})
 		.catch()
 }
-
-
-
-function createListOfAutoComplete(list, div){
-	let html = "";
-	for (let item of list){
-		let newToggle = document.createElement("div");
-		newToggle.setAttribute("class", "autocomplete-item")
-		newToggle.innerHTML = item;
-		newToggle.addEventListener("click", function(e){
-			let elem = div.parentNode.querySelector("input")
-			elem.value = removeDash(item)
-		})
-		div.appendChild(newToggle);
-	}
-}
-
-
-function getMovesStartingWith(s){
-	fetch(`https://localhost:8080/api/moves?startWith=${s}`)
-		.then(resp => resp.json())
-		.then(resp => {})
-}
-
-
-
 
 function changeOppPokemon(e){
 	let cleansedText = cleanseText(e.value)
 	fetch(`https://pokeapi.co/api/v2/pokemon/${cleansedText}`)
 		.then(resp => resp.json())
 		.then(resp => {
-			e.parentNode.parentNode.querySelector(".opp-pokemon").src=`${resp.sprites.front_default}`
+			e.parentNode.parentNode.parentNode.querySelector(".opp-pokemon").src=`${resp.sprites.front_default}`
 			let html = "";
 			for(let abil in resp.abilities){
 				html += `<option ${abil==0?'selected' : ''} value=${resp.abilities[abil].ability.name}>${removeDash(resp.abilities[abil].ability.name)}</option>`
 			}
-			e.parentNode.parentNode.parentNode.querySelector(".opp-ability").innerHTML=html
+			changeTypes(e.parentNode.parentNode.parentNode.querySelector('.type-pokemon'), resp.types);
+			e.parentNode.parentNode.parentNode.parentNode.querySelector(".opp-ability").innerHTML=html
 		})
 		.catch()
 }
@@ -121,7 +199,7 @@ function changeItemForOppPokemon(e){
 	let cleansedText = cleanseText(e.value)
 	fetch(`https://pokeapi.co/api/v2/item/${cleansedText}`)
 		.then(resp => resp.json())
-		.then(resp => {e.parentNode.querySelector(".opp-item").src=`${resp.sprites.default}`})
+		.then(resp => {e.parentNode.parentNode.querySelector(".opp-item").src=`${resp.sprites.default}`})
 		.catch()
 }
 
@@ -130,6 +208,9 @@ function addRow(){
 	cloneRow = changeAllNodes(cloneRow, conditions.children.length)
 	conditions.appendChild(cloneRow);
 	conditions.appendChild(document.getElementById('add-button'));
+	if (conditions.childNodes.length>=10){
+		document.getElementById('add-button').classList.add('invisible');
+	}
 }
 
 function changeCondition(e){
@@ -167,6 +248,7 @@ function deleteRow(e){
 			return
 		}
 	}
+	document.getElementById('add-button').classList.remove('invisible')
 }
 
 function expandRow(e){

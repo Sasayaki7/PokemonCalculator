@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -37,11 +38,11 @@ public class CalculatorController {
 	private static final String[] conditions = {"Outspeed", "Survive", "Knock Out", "Underspeed"};
 	private static final String[] weathers = {"None", "Rain", "Sun", "Sand", "Hail"};
 	private static final String[] terrains = {"None", "Misty", "Grassy", "Electric", "Psychic"};
-
+	private static final String[] status = {"Healthy", "Burn", "Paralyze", "Freeze", "Poison", "Toxic"};
 	
+	@CrossOrigin
 	@GetMapping("/api/moves")
 	@ResponseBody public List<String> getMoves(@RequestParam(value="startWith") String param) {
-		System.out.println(param);
 		List<Move> moves = apiServ.getMoveStartingWith(param);
 		List<String> retStr = new ArrayList<String>();
 		for (Move m: moves) {
@@ -50,6 +51,7 @@ public class CalculatorController {
 		return retStr;
 	}
 	
+	@CrossOrigin
 	@GetMapping("/api/items")
 	@ResponseBody public List<String> getItems(@RequestParam(value="startWith") String param) {
 		List<Item> items= apiServ.getItemStartingWith(param);
@@ -60,6 +62,7 @@ public class CalculatorController {
 		return retStr;
 	}
 	
+	@CrossOrigin
 	@GetMapping("/api/pokemon")
 	@ResponseBody public List<String> getPokemon(@RequestParam(value="startWith") String param) {
 		List<Pokemon> pokes= apiServ.getPokemonStartingWith(param);
@@ -77,16 +80,19 @@ public class CalculatorController {
 		model.addAttribute("weathers", weathers);
 		model.addAttribute("terrains", terrains);
 		model.addAttribute("natures", apiServ.getNatures());
+		model.addAttribute("status", status);
 		return "calculator.jsp";
 	}
 	
 	@PostMapping("/")
 	public String calculateResult(HttpServletRequest request, Model model) {
-		Pokemon defendingPokemon = apiServ.getPokemon(request.getParameter("calcpokemon"));
+		Pokemon defendingPokemon = apiServ.getPokemon(apiServ.lowerStringRemoveDashes(request.getParameter("calcpokemon")));
 		defendingPokemon.setLevel(Integer.parseInt(request.getParameter("level")));
 		System.out.println("Level: "+defendingPokemon.getLevel());
-		defendingPokemon.setAbility(new Ability(request.getParameter("ability")));
-		defendingPokemon.setItem(request.getParameter("item"));
+		defendingPokemon.setAbility(new Ability(apiServ.lowerStringRemoveDashes(request.getParameter("ability"))));
+		defendingPokemon.setItem(apiServ.lowerStringRemoveDashes(request.getParameter("item")));
+		defendingPokemon.setStatus(request.getParameter("stat"));
+
 		if (request.getParameter("nature-pokemon").equals("undecided")) {
 			defendingPokemon.setNature(null);
 		}
@@ -97,14 +103,15 @@ public class CalculatorController {
 		List<Condition> conditions = new ArrayList<Condition>();
 		while(request.getParameter("pokemon-"+counter) != null) {
 			Condition condition = new Condition();
-			Pokemon condPokemon = apiServ.getPokemon(request.getParameter("pokemon-"+counter));
-			condPokemon.setAbility(new Ability(request.getParameter("ability-"+counter)));
-			condPokemon.setItem(request.getParameter("item-"+counter));
+			Pokemon condPokemon = apiServ.getPokemon(apiServ.lowerStringRemoveDashes(request.getParameter("pokemon-"+counter)));
+			condPokemon.setAbility(new Ability(apiServ.lowerStringRemoveDashes(request.getParameter("ability-"+counter))));
+			condPokemon.setItem(apiServ.lowerStringRemoveDashes(request.getParameter("item-"+counter)));
 			condPokemon.setLevel(Integer.parseInt(request.getParameter("level-"+counter)));
+			condPokemon.setStatus(request.getParameter("status-"+counter));
 			condPokemon.getStats().get(0).setIv(Integer.parseInt(request.getParameter("hp-iv-"+counter)));
 			condPokemon.getStats().get(0).setEffort(Integer.parseInt(request.getParameter("hp-"+counter)));
-
-			Move move = apiServ.getMove(request.getParameter("move-"+counter));
+			condition.setDoubles(request.getParameter("single-double").equals("double"));
+			Move move = apiServ.getMove(apiServ.lowerStringRemoveDashes(request.getParameter("move-"+counter)));
 			if (move.getDamageClass().getIdentifier().equals("physical")) {
 				condPokemon.getStats().get(1).setIv(Integer.parseInt(request.getParameter("atk-iv-"+counter)));
 				condPokemon.getStats().get(1).setEffort(Integer.parseInt(request.getParameter("atk-"+counter)));			
@@ -117,17 +124,44 @@ public class CalculatorController {
 				condPokemon.getStats().get(4).setIv(Integer.parseInt(request.getParameter("def-iv-"+counter)));
 				condPokemon.getStats().get(4).setEffort(Integer.parseInt(request.getParameter("def-"+counter)));
 			}
-			condPokemon.setNature(apiServ.getNature(request.getParameter("nature-"+counter)));
+			condPokemon.setNature(apiServ.getNature(apiServ.lowerStringRemoveDashes(request.getParameter("nature-"+counter))));
 			condPokemon.getStats().get(5).setIv(Integer.parseInt(request.getParameter("speed-iv-"+counter)));
-			condPokemon.getStats().get(5).setEffort(Integer.parseInt(request.getParameter("speed-"+counter)));
+			condPokemon.getStats().get(5).setEffort(Integer.parseInt(request.getParameter("speed-"+counter)));			
 			condition.setPokemon(condPokemon);
+			condition.setGeneration(Integer.parseInt(request.getParameter("generation")));
 			condition.setCond(request.getParameter("condition-"+counter));
 			condition.setOppBoost(request.getParameter("boost-opp-"+counter));
 			condition.setYourBoost(request.getParameter("boost-you-"+counter));
 			condition.setWeather(request.getParameter("weather-"+counter));
 			condition.setTerrain(request.getParameter("terrain-"+counter));
-			condition.setScreens(Boolean.parseBoolean(request.getParameter("screen-"+counter)));
-			condition.setMove(apiServ.getMove(request.getParameter("move-"+counter)));
+			if (request.getParameter("screen-"+counter) != null) {
+				condition.setScreens(true);
+			}
+			if (request.getParameter("your-tailwind-"+counter) != null){
+				condition.setYourTw(true);
+			}
+			
+			if (request.getParameter("foe-tailwind-"+counter) != null){
+				condition.setFoeTw(true);
+			}
+			
+			if (request.getParameter("hh-"+counter) != null){
+				condition.setHelpingHand(true);
+			}
+			
+			if (request.getParameter("flower-gift-"+counter) != null){
+				condition.setFlowerGift(true);
+			}
+			
+			if (request.getParameter("power-spot-"+counter) != null){
+				condition.setPowerSpot(true);
+			}
+			
+			if (request.getParameter("battery-"+counter) != null){
+				condition.setBattery(true);
+			}
+
+			condition.setMove(apiServ.getMove(apiServ.lowerStringRemoveDashes(request.getParameter("move-"+counter))));
 			condition.setHealth(Double.parseDouble(request.getParameter("hp-percentage-"+counter)));
 			counter++;
 			conditions.add(condition);
@@ -144,14 +178,23 @@ public class CalculatorController {
 			tempX[1] = labels[i];
 			statListX.add(tempX);
 		}
+		ArrayList<Condition> goodCond = new ArrayList<Condition>();
+		ArrayList<Condition> badCond = new ArrayList<Condition>();
+		
+		model.addAttribute("resultOn", true);
 		model.addAttribute("calcedstat", statListX);
 		model.addAttribute("conditions", conditions);
 		model.addAttribute("pokemon", defendingPokemon);
+		if (defendingPokemon.getNature() == null) {
+			defendingPokemon.setNature((Nature) result.get("calculatedNature"));
+		}
 		if (result.get("suggestedEVarr") != null) {
 			model.addAttribute("suggestionEV", (int[])result.get("suggestedEVarr"));
 			model.addAttribute("suggestedNature", (Nature) result.get("suggestedNature"));
-
 		}
+		model.addAttribute("goodCondition", result.get("goodCond"));
+		model.addAttribute("badCondition", result.get("badCond"));
+
 		
 //		Map<String, String[]> paramMap =  request.getParameterMap();
 //		for(Map.Entry<String, String[]> entry : paramMap.entrySet()) {

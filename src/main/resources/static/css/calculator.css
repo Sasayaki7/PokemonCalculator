@@ -1,28 +1,97 @@
 @charset "ISO-8859-1";
 
-.invisible{
-	display: none;
-}
-
-.short-number{
-	width: 60px;
-}
-
-.conditions{
-	display: flex;
-	border: groove white 2px;
-	flex-direction: column;
-	
-}
 
 body{
 	background-color: black;
 	color: white;	
 }
 
+
+.invisible{
+	display: none;
+}
+
+
+
+h1{
+	margin: auto;
+	width: 100%;
+	text-align: center;
+}
+
+.form-div{
+	display: flex;
+	margin: 15px;
+}
+
+.left-pokemon{
+	display: flex;
+	flex-direction: column;
+	justify-content: left;
+	flex: 1;
+	gap: 5px;
+	border: solid white 1px;
+}
+
+#pokemon-pic{
+	height: 150px;
+	width: 150px;
+	display: block;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 15px;
+}
+
+.type-pokemon{
+	display: flex;
+	justify-content: center;
+	gap: 10px;
+}
+
+.type-pokemon img{
+	height: 20px;
+}
+
+.short-number{
+	width: 60px;
+}
+
+.medium-text{
+	width: 160px;
+}
+
+.input-row{
+	display: flex;
+	gap: 5px;
+}
+
+.input-row label{
+	width: 85px;
+	font-size: 11pt;
+	text-align: right;
+}
+
+.left-pokemon .input-row{
+	margin-left: 30px;
+}
+
+
 input{
 	background-color: #444444;
 	color: white;
+}
+
+.conditions{
+	display: flex;
+	border: groove white 2px;
+	flex-direction: column;
+	flex: 4;
+}
+
+.cells{
+	display: flex;
+	gap: 5px;
+	border: white solid 1px;
 }
 
 .add-button{
@@ -33,6 +102,8 @@ input{
 .opp-pokemon{
 	height: 100px;
 	width: 100px;
+	margin: auto;
+	display: block;
 }
 
 .delete-button{
@@ -40,7 +111,33 @@ input{
 	width: 60px;
 }
 
-.cells{
-	display: flex;
-	gap: 5px;
+
+
+
+.form-input-with-autocomplete{
+	position: relative;	
 }
+
+.item-autocomplete{
+	width: 100%;
+	position: absolute;
+	z-index: 10;
+	background-color: black;
+}
+
+.autocomplete-selector{
+	border: 1px solid white;
+}
+.autocomplete-selector:hover{
+	background: gray;
+}
+
+.centerizer{
+	display: flex;
+	justify-content: center;
+}
+
+.submit-button{
+	margin: auto;
+}
+

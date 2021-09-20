@@ -13,185 +13,113 @@
     <meta charset="UTF-8">
     <title>Pokémon EV/IV calculator</title>
     <link rel="stylesheet" href="/webjars/bootstrap/css/bootstrap.min.css">
-    <link rel="stylesheet" href="/css/calculator.css"> <!-- change to match your file/naming structure -->
+    <link rel="stylesheet" href="/css/calculatorresult.css"> <!-- change to match your file/naming structure -->
     <script src="/webjars/jquery/jquery.min.js"></script>
     <script src="/webjars/bootstrap/js/bootstrap.min.js"></script>
 </head>
 <body>
-	<h1>Pokémon Calculator</h1>
-	<form action="/" method="POST">
-		<img id="pokemon-pic" src="" alt="Pokémon"/>
-		<img id="item-pic" src="" alt="Pokémon"/>
-		
-		<div class="input-row">
-			<label for="calcpokemon">Pokémon:</label>
-	   		<input type="text" name="calcpokemon" onChange="getImageForPokemon(this)"/>
-	   	</div>
-   		<div class="input-row">
-   			<label for="item">Item:</label>
-   			<input type="text" name="item" onChange="changeItemForPokemon(this)"/>
-   			<div class="item-autocomplete"></div>
-   		</div>
-   		<div class="input-row">
-   			<label for="ability">Ability: </label>
-   			<select name="ability" class="your-ability">
-	   		</select>
-   		</div>
-   		<div class="input-row">
-   			<label for="level">Level:</label>
-   			<input class="short-number" name="level" type="number" min="1" max="100" value="100"/>
-   			
-   		</div>
-   		<div class="input-row">
-   		   	<label for="nature-pokemon">Nature:</label>
-	   		<select name="nature-pokemon">
-	   			<option value="undecided" selected>Not important</option>
-	   			<c:forEach var="nature" items="${natures }">
-	   				<option value="${nature.identifier }"><c:out value="${nature.identifier}"/></option>
-	   			</c:forEach>
-	   		</select>
-   		</div>
-   		<div class="conditions">
-   			<div id="condition-1" class="cells">
-   				<div class="cell">
-	   				<select name="condition-1" onChange= "changeCondition(this)">
-	   					<c:forEach var="condition" items="${conditions}">
-	   						<option value="${condition}"><c:out value="${condition }"/></option>
-	   					</c:forEach>
-	   				</select>
-	   			</div>
-	   			<div class="cell">
-	   				<img class="opp-pokemon" src="" alt="">
-	   				<div class="input-row">
-		   				<label for="pokemon-1">Opp. Pokémon:</label>
-		   				<input type="text" name="pokemon-1" onChange="changeOppPokemon(this)">
-	   				</div>
-	   			</div>
-	   			<div class="cell">
-	   				<div class="input-row">
-	   					<label for="ability-1">Opp. Ability:</label>
-	   					<select name="ability-1" class="opp-ability">
-	   					</select>
-	   				</div>
-	   				<div class="input-row">
-	   					<img class="opp-item" src="">
-	   					<label for="item-1">Opp. Item:</label>
-	   					<input type="text" name="item-1" onChange="changeItemForOppPokemon(this)">
-	   				</div>
-	   				<div class="input-row">
-	   					<label for="level-1">Opp. Level:</label>
-	   					<input class="short-number" type="number" name="level-1" min="1" max="100" value="100"/>
-	   				</div>
-	   				<div class="input-row">
-	   					<label for="nature-1">Nature:</label>
-		   				<select name="nature-1">
-	   						<c:forEach var="nature" items="${natures }" varStatus="loop">
-	   							<option value="${nature.identifier }" <c:if test="${loop.first}">selected</c:if>><c:out value="${nature.identifier}"/></option>
-	   						</c:forEach>
-	   					</select>
-   					</div>
-   					<div class="input-row">
-   						<label for="hp-percentage-1">HP:</label>
-   						<input type="text" name="hp-percentage-1" value="100"/>
-   					</div>
-   				</div>
-   				<div class="cell">		
-	   				<div class="defev">
-	   					<div class="display-ev-iv">
-	   						<h6>HP</h6>
-		   					<label for="hp-1">EV:</label>
-		   					<input class="short-number" type="number" name="hp-1" min="0" max="252" value="0"/>
-		   					<label for="hp-iv-1">IV:</label>
-		   					<input class="short-number" type="number" name="hp-iv-1" min="0" max="31" value="31"/>
-	   					</div>
+	<div class="pokemon-info">
+		<div class="left-side">
+			<div class="sprite-frame">
+				<img src="https://play.pokemonshowdown.com/sprites/xyani/${pokemon.getIdentifierNoSpace()}.gif">
+				<img id="item-img" src="${pokemon.item}">
+			</div>
+			<h2><c:out value="${pokemon.getIdentifierCleaned()}"/></h2>
+			<p>Level: <c:out value="${pokemon.level}"/></p>
+			<p>Ability: <c:out value="${pokemon.ability.getIdentifierCleaned()}"/></p>
+		</div>
+		<div class="stattable">
+			<table>
+				<thead>
+					<tr>
+						<th>Stat</th>
+						<th>IVs</th>
+						<th>EVs</th>
+					</tr>
+				</thead>
+				<tbody>
+					<c:forEach var="result" items="${calcedstat}" varStatus="loop">
+						<tr>
+						<c:choose>
+							<c:when test="${not loop.last}">
+								<td><c:out value="${result[1]}:"/></td>
+								<td>31</td>
+								<td><c:out value="${result[0]}"/></td>
+							</c:when>
+							<c:otherwise>
+								<td>Remaining:</td>
+								<td>31</td>
+								<td><c:out value="${result[0]}"/></td>
+							</c:otherwise>
+						</c:choose>
+						</tr>
+					</c:forEach>
+				</tbody>	
+			</table>
+			<p>Nature: <c:out value="${pokemon.nature.getIdentifierCleaned()}"/></p>
+		</div>
+	</div>
 	
-	   					<div class="display-ev-iv">
-	   						<h6>Def/Spd</h6>
-	   						<label for="def-1">EV:</label>
-	   						<input class="short-number" type="number" name="def-1" min="0" max="252" value="0"/>
-	   						<label for="def-iv-1">IV:</label>
-	   						<input class="short-number" type="number" name="def-iv-1" min="0" max="31" value="31"/>
-	   					</div>
-	   				</div>
-	   				<div class="invisible offev">
-	   					<div class="display-ev-iv">
-	   						<h6>Atk/SpA</h6>
-	   						<label for="atk-1">EV:</label>
-	   						<input class="short-number" type="number" name="atk-1" min="0" max="252" value="0"/>
-	   						<label for="atk-iv-1">IV:</label>
-	   						<input class="short-number" type="number" name="atk-iv-1" min="0" max="31" value="31"/>
-	   					</div>
-	   				</div>
-	   				<div class="speedev invisible">
-	   					<div class="display-ev-iv">
-	   						<h6>Speed</h6>
-	   						<label for="speed-1">EV:</label>
-	   						<input class="short-number" type="number" name="speed-1" min="0" max="252" value="0"/>
-	   						<label for="speed-iv-1">IV:</label>
-	   						<input class="short-number" type="number" name="speed-iv-1" min="0" max="31" value="31"/>
-	   					</div>
-	   				</div>
-	   			</div>
-	   			<div class="cell">	
-	   				<div class="boost-selector">
-		   				<label for="boost-you-1">Your boosts:</label>
-		   				<select name="boost-you-1">
-				   			<c:forEach var="boost" items="${boosts}">
-				   				<option value="${boost}"<c:if test="${boost eq '0'}"> selected</c:if>><c:out value="${boost}"/></option>
-				   			</c:forEach>
-				   		</select>
-					</div>
-				   	<div class="boost-selector">
-		   				<label for="boost-opp-1">Opp boosts:</label>
-		   				<select name="boost-opp-1">
-				   			<c:forEach var="boost" items="${boosts}">
-				   				<option value="${boost}"<c:if test="${boost eq '0'}"> selected</c:if>><c:out value="${boost}"/></option>
-					   		</c:forEach>
-					   	</select>
-					</div>
+	<div class="condition-display">
+		<div>
+			<h2>Conditions that were met:</h2>
+			<c:forEach var="condition" items="${goodCondition}">
+				<div class="condition-ok condition">
+					<img src="https://www.smogon.com/forums//media/minisprites/${condition.pokemon.identifier}.png">
+					<p><c:out value="${condition.cond}"/></p>
 				</div>
-   				<img id="expand-button" class='add-button' src="/assets/plus.png" alt="plus button" onClick="expandRow(this)"/>
-   				<div class="cell">
-   					<div>
-   						<h4>Field Effects</h4>
-   						<label for="terrain-1">Terrain:</label>
-   						<select name="terrain-1">
-   							<c:forEach var="terrain" items="${terrains}">
-   								<option value="${terrain}"><c:out value="${terrain}"/></option>
-   							</c:forEach>
-   						</select>
-   						<label for="weather-1">Weather:</label>
-   						
-   						<select name="weather-1">
-   							<c:forEach var="weather" items="${weathers}">
-   								<option value="${weather}"><c:out value="${weather}"/></option>
-   							</c:forEach>
-   						</select>
-						<p>Screens:</p>
-    					<input type="radio" id="screen-yes-1" name="screen-1" value="true"/>
-   							<label for="screen-yes-1">Yes</label>
-   						<input type="radio" id="screen-no-1" name="screen-1" value="false" checked/>
-   							<label for="screen-no-1">No</label>
-   							
-   					</div>
-   				</div>
-   				<img class="delete-button" src="/assets/garbage.png" alt="delete button" onClick="deleteRow(this)"/>
-   			</div>
-   			<img id="add-button" class='add-button' src="/assets/plus.png" alt="plus button" onClick="addRow()"/>
-   			
-   		</div>
-   		<button class="btn btn-primary">Calculate</button>
-   	</form>
-   	<c:forEach var="stat" items="${calcedstat}">
-   		<p><c:out value="${stat[1]}: ${stat[0]}"/></p>
-   	</c:forEach>
-   	
-   	<div class="suggestion-box">
-   	<p>Suggested Nature: <c:out value="${suggestedNature.getIdentifier()}"/></p>
-   	<c:forEach var="suggestion" items="${suggestionEV}">
-   		<c:out value="${suggestion }"/>
-   	</c:forEach>
-   	</div>
+			</c:forEach>
+		</div>
+		<div>
+			<h2>Conditions that could not be met:</h2>
+			<c:forEach var="condition" items="${badCondition}">
+				<div class="condition-ng condition">
+					<img src="https://www.smogon.com/forums//media/minisprites/${condition.pokemon.identifier}.png">
+					<p><c:out value="${condition.cond}"/></p>
+				</div>
+			</c:forEach>
+		</div>
+	</div>
+	<div class="pokepaste">
+		<p><c:out value="${pokemon.getIdentifierCleaned()}"/> <c:if test="${not empty pokemon.item}">@ <c:out value="${pokemon.getItemCleaned()}"/></c:if></p>
+		<p>Ability: <c:out value="${pokemon.ability.getIdentifierCleaned()}"/></p>
+		<c:set var="test" value="${false}"/>
+		<p>EVs: <c:forEach var="result" items="${calcedstat}">
+			<c:if test="${result[0] gt 0}">
+				<c:if test="${test}">/</c:if>
+				<c:out value="${result[0]} "/>
+				<c:set var="test" value="${false}"/>
+			</c:if>
+			</c:forEach>
+		</p>
+		<p><c:out value="${pokemon.nature.getIdentifierCleaned()}"/> Nature</p>  
+		<p>- </p>
+		<p>- </p>
+		<p>- </p>
+		<p>- </p>
+	</div>
+	<c:if test="${not empty suggestedEVarr}">
+		<div class="pokepaste">
+			<p><c:out value="${pokemon.getIdentifierCleaned()}"/> <c:if test="${not empty pokemon.item}">@ <c:out value="${pokemon.getItemCleaned()}"/></c:if></p>
+			<p>Ability: <c:out value="${pokemon.ability.getIdentifierCleaned()}"/></p>
+			<c:set var="test" value="${false}"/>
+			<p>EVs: <c:forEach var="result" items="${suggestionEV}">
+				<c:if test="${result gt 0}">
+					<c:if test="${test}">/</c:if>
+					<c:out value="${result} "/>
+					<c:set var="test" value="${false}"/>
+				</c:if>
+				</c:forEach>
+			</p>
+			<p><c:out value="${suggestedNature.getIdentifierCleaned()}"/> Nature</p>  
+			<p>- </p>
+			<p>- </p>
+			<p>- </p>
+			<p>- </p>
+		</div>
+	</c:if>
+	
+	<a class="btn btn-secondary center-button" href="/">Return</a>
 </body>
 </html>
 
