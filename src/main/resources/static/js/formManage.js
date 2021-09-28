@@ -155,12 +155,40 @@ function changeTypes(node, list){
 
 }
 
+function cleanForImage(str){
+		if (str.indexOf("tapu") != -1) {
+			return str.replace(" ", "");
+		}
+		else if (str =="type-null"||str=="mr-rime"||str=="mime-jr") {
+			return str.replace("-", "");
+		}
+		else if (str.indexOf("mr-mime") != -1) {
+			return str.replace("mr-mime", "mrmime").replace('-', ' ');
+		}
+		else if (str.indexOf("mega-x") != -1) {
+			return str.replace("mega-x", "megax").replace('-', ' ');
+		}
+		else if (str.indexOf("mega-y") != -1) {
+			return str.replace("mega-y", "megay").replace('-', ' ');
+		}
+		else if (str.indexOf("rapid-strike") != -1) {
+			return str.replace("rapid-strike", "rapidstrike").replace('-', ' ');
+		}
+		else if (str.indexOf("single-strike") != -1) {
+			return str.replace("single-strike", "singlestrike").replace('-', ' ');
+		}
+		else {
+			return str.replace('-', ' ');
+		}
+}
 
 function getImageForPokemon(e){
+	let imageCleanseText = cleanForImage(e.value.toLowerCase())
+
 	let cleansedText = cleanseText(e.value)
 	fetch(`https://pokeapi.co/api/v2/pokemon/${cleansedText}`)
 		.then(resp => resp.json())
-		.then(resp => {document.getElementById("pokemon-pic").src=`${resp.sprites.front_default}`
+		.then(resp => {document.getElementById("pokemon-pic").src=`https://play.pokemonshowdown.com/sprites/xyani/${imageCleanseText}.gif`
 			let html = "";
 			for(let abil in resp.abilities){
 				html += `<option ${abil==0?'selected' : ''} value=${resp.abilities[abil].ability.name}>${removeDash(resp.abilities[abil].ability.name)}</option>`
@@ -172,11 +200,12 @@ function getImageForPokemon(e){
 }
 
 function changeOppPokemon(e){
+	let imageCleanseText = cleanForImage(e.value.toLowerCase())
 	let cleansedText = cleanseText(e.value)
 	fetch(`https://pokeapi.co/api/v2/pokemon/${cleansedText}`)
 		.then(resp => resp.json())
 		.then(resp => {
-			e.parentNode.parentNode.parentNode.querySelector(".opp-pokemon").src=`${resp.sprites.front_default}`
+			e.parentNode.parentNode.parentNode.querySelector(".opp-pokemon").src=`https://play.pokemonshowdown.com/sprites/xyani/${imageCleanseText}.gif`
 			let html = "";
 			for(let abil in resp.abilities){
 				html += `<option ${abil==0?'selected' : ''} value=${resp.abilities[abil].ability.name}>${removeDash(resp.abilities[abil].ability.name)}</option>`
@@ -189,18 +218,12 @@ function changeOppPokemon(e){
 
 function changeItemForPokemon(e){
 	let cleansedText = cleanseText(e.value)
-	fetch(`https://pokeapi.co/api/v2/item/${cleansedText}`)
-		.then(resp => resp.json())
-		.then(resp => {document.getElementById("item-pic").src=`${resp.sprites.default}`})
-		.catch()
+	document.getElementById("item-pic").src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${cleansedText}.png`
 }
 
 function changeItemForOppPokemon(e){
 	let cleansedText = cleanseText(e.value)
-	fetch(`https://pokeapi.co/api/v2/item/${cleansedText}`)
-		.then(resp => resp.json())
-		.then(resp => {e.parentNode.parentNode.querySelector(".opp-item").src=`${resp.sprites.default}`})
-		.catch()
+	e.parentNode.parentNode.parentNode.parentNode.querySelector(".opp-item").src=`https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${cleansedText}.png`
 }
 
 function addRow(){

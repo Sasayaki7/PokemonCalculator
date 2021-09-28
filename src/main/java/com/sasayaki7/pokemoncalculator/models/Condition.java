@@ -32,6 +32,9 @@ public class Condition {
 	private boolean charge=false;
 	private boolean gravity=false;
 	private boolean flashFire=false;
+	private boolean z;
+	private boolean selfDmax;
+	private boolean oppDmax;
 
 	
 	public Condition() {
@@ -424,6 +427,38 @@ public class Condition {
 	public void setFlashFire(boolean flashfire) {
 		this.flashFire = flashfire;
 	}
+
+
+	public boolean isZ() {
+		return z;
+	}
+
+
+	public void setZ(boolean z) {
+		this.z = z;
+	}
+
+
+	public boolean isSelfDmax() {
+		return selfDmax;
+	}
+
+
+	public void setSelfDmax(boolean selfDmax) {
+		this.selfDmax = selfDmax;
+	}
+
+
+	public boolean isOppDmax() {
+		return oppDmax;
+	}
+
+
+	public void setOppDmax(boolean oppDmax) {
+		this.oppDmax = oppDmax;
+	}
+	
+	
 	
 	
 	

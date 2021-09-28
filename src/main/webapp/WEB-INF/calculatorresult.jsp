@@ -18,66 +18,69 @@
     <script src="/webjars/bootstrap/js/bootstrap.min.js"></script>
 </head>
 <body>
-	<div class="pokemon-info">
-		<div class="left-side">
-			<div class="sprite-frame">
-				<img src="https://play.pokemonshowdown.com/sprites/xyani/${pokemon.getIdentifierNoSpace()}.gif">
-				<img id="item-img" src="${pokemon.item}">
+	<h1>Calculation Results</h1>
+	<div class = "final-display">
+		<div class="pokemon-info">
+			<div class="left-side">
+				<div class="sprite-frame">
+					<img id="pokemon-img" src="https://play.pokemonshowdown.com/sprites/xyani/${pokemon.getIdentifierNoSpace()}.gif">
+					<img id="item-img" src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${pokemon.item}.png">
+				</div>
+				<h2><c:out value="${pokemon.getIdentifierCleaned()}"/></h2>
+				<p>Level: <c:out value="${pokemon.level}"/></p>
+				<p>Ability: <c:out value="${pokemon.ability.getIdentifierCleaned()}"/></p>
 			</div>
-			<h2><c:out value="${pokemon.getIdentifierCleaned()}"/></h2>
-			<p>Level: <c:out value="${pokemon.level}"/></p>
-			<p>Ability: <c:out value="${pokemon.ability.getIdentifierCleaned()}"/></p>
-		</div>
-		<div class="stattable">
-			<table>
-				<thead>
-					<tr>
-						<th>Stat</th>
-						<th>IVs</th>
-						<th>EVs</th>
-					</tr>
-				</thead>
-				<tbody>
-					<c:forEach var="result" items="${calcedstat}" varStatus="loop">
+			<div class="stattable">
+				<table>
+					<thead>
 						<tr>
-						<c:choose>
-							<c:when test="${not loop.last}">
-								<td><c:out value="${result[1]}:"/></td>
-								<td>31</td>
-								<td><c:out value="${result[0]}"/></td>
-							</c:when>
-							<c:otherwise>
-								<td>Remaining:</td>
-								<td>31</td>
-								<td><c:out value="${result[0]}"/></td>
-							</c:otherwise>
-						</c:choose>
+							<th>Stat</th>
+							<th>IVs</th>
+							<th>EVs</th>
 						</tr>
-					</c:forEach>
-				</tbody>	
-			</table>
-			<p>Nature: <c:out value="${pokemon.nature.getIdentifierCleaned()}"/></p>
+					</thead>
+					<tbody>
+						<c:forEach var="result" items="${calcedstat}" varStatus="loop">
+							<tr>
+							<c:choose>
+								<c:when test="${not loop.last}">
+									<td><c:out value="${result[1]}:"/></td>
+									<td>31</td>
+									<td><c:out value="${result[0]}"/></td>
+								</c:when>
+								<c:otherwise>
+									<td>Remaining:</td>
+									<td>31</td>
+									<td><c:out value="${result[0]}"/></td>
+								</c:otherwise>
+							</c:choose>
+							</tr>
+						</c:forEach>
+					</tbody>	
+				</table>
+				<p>Nature: <c:out value="${pokemon.nature.getIdentifierCleaned()}"/></p>
+			</div>
 		</div>
-	</div>
 	
-	<div class="condition-display">
-		<div>
-			<h2>Conditions that were met:</h2>
-			<c:forEach var="condition" items="${goodCondition}">
-				<div class="condition-ok condition">
-					<img src="https://www.smogon.com/forums//media/minisprites/${condition.pokemon.identifier}.png">
-					<p><c:out value="${condition.cond}"/></p>
-				</div>
-			</c:forEach>
-		</div>
-		<div>
-			<h2>Conditions that could not be met:</h2>
-			<c:forEach var="condition" items="${badCondition}">
-				<div class="condition-ng condition">
-					<img src="https://www.smogon.com/forums//media/minisprites/${condition.pokemon.identifier}.png">
-					<p><c:out value="${condition.cond}"/></p>
-				</div>
-			</c:forEach>
+		<div class="condition-display">
+			<div>
+				<h2>Conditions that were met:</h2>
+				<c:forEach var="condition" items="${goodCondition}">
+					<div class="condition-ok condition">
+						<img src="https://www.smogon.com/forums//media/minisprites/${condition.pokemon.identifier}.png">
+						<p><c:out value="${condition.summary}"/></p>
+					</div>
+				</c:forEach>
+			</div>
+			<div>
+				<h2>Conditions that could not be met:</h2>
+				<c:forEach var="condition" items="${badCondition}">
+					<div class="condition-ng condition">
+						<img src="https://www.smogon.com/forums//media/minisprites/${condition.pokemon.identifier}.png">
+						<p><c:out value="${condition.summary}"/></p>
+					</div>
+				</c:forEach>
+			</div>
 		</div>
 	</div>
 	<div class="pokepaste">
@@ -103,8 +106,8 @@
 			<p><c:out value="${pokemon.getIdentifierCleaned()}"/> <c:if test="${not empty pokemon.item}">@ <c:out value="${pokemon.getItemCleaned()}"/></c:if></p>
 			<p>Ability: <c:out value="${pokemon.ability.getIdentifierCleaned()}"/></p>
 			<c:set var="test" value="${false}"/>
-			<p>EVs: <c:forEach var="result" items="${suggestionEV}">
-				<c:if test="${result gt 0}">
+			<p>EVs: <c:forEach var="result" items="${suggestionEV}" varStatus="mish">
+				<c:if test="${result gt 0 and not mish.last}">
 					<c:if test="${test}">/</c:if>
 					<c:out value="${result} "/>
 					<c:set var="test" value="${false}"/>

@@ -33,13 +33,32 @@ h1{
 	border: solid white 1px;
 }
 
-#pokemon-pic{
+
+.item-pokemon-display{
+	position: relative;
 	height: 150px;
 	width: 150px;
 	display: block;
 	margin-left: auto;
 	margin-right: auto;
 	margin-top: 15px;
+}
+
+#item-pic{
+	position: relative;
+	height: 60px;
+	width: 60px;
+	left: 90px;
+	top: -60px;
+}
+
+.error{
+	color: red;
+}
+
+#pokemon-pic{
+	height: 150px;
+	width: 150px;
 }
 
 .type-pokemon{
@@ -71,6 +90,10 @@ h1{
 	text-align: right;
 }
 
+.top-row{
+	justify-content: space-around;
+}
+
 .left-pokemon .input-row{
 	margin-left: 30px;
 }
@@ -99,11 +122,26 @@ input{
 	width: 60px;
 }
 
-.opp-pokemon{
+.opp-pokemon-cell{
 	height: 100px;
 	width: 100px;
 	margin: auto;
 	display: block;
+}
+
+.opp-pokemon{
+	border: 0px transparent;
+	height: 100px;
+	width: 100px;
+}
+
+.opp-item{
+	height: 40px;
+	border: 0px transparent;
+	width: 40px;
+	position: relative;
+	top: -40px;
+	left: 60px;
 }
 
 .delete-button{

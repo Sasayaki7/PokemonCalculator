@@ -16,6 +16,8 @@ public class Move {
 	
 	private String identifier;
 	private Integer power;
+	private Integer maxMovePower;
+	private Integer effectId;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="damage_class_id")	
@@ -38,6 +40,14 @@ public class Move {
 
 	public void setPower(Integer power) {
 		this.power = power;
+	}
+	
+	public Integer getEffectId() {
+		return effectId;
+	}
+
+	public void setEffectId(Integer effectId) {
+		this.effectId = effectId;
 	}
 
 	public DamageClass getDamageClass() {
@@ -70,6 +80,28 @@ public class Move {
 
 	public void setId(Long id) {
 		this.id = id;
+	}
+	
+	
+	public Integer getMaxMovePower() {
+		return maxMovePower;
+	}
+
+	public void setMaxMovePower(Integer maxMovePower) {
+		this.maxMovePower = maxMovePower;
+	}
+
+	public String getIdentifierCleaned() {
+		String repS = identifier.replace('-', ' ');
+		if (identifier.length() > 0) {
+			repS = repS.substring(0, 1).toUpperCase()+repS.substring(1);
+			for(int i = 1; i < repS.length(); i++) {
+				if (repS.charAt(i) == ' ') {
+					repS = repS.substring(0, i+1)+repS.substring(i+1, i+2).toUpperCase()+repS.substring(i+2);
+				}
+			}
+		}
+		return repS;
 	}
 
 	public String getIdentifier() {

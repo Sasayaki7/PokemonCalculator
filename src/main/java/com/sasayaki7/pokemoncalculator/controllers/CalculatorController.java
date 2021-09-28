@@ -35,7 +35,7 @@ public class CalculatorController {
 		
 	
 	private static final String[] boosts = {"+6", "+5", "+4", "+3", "+2", "+1", "0", "-1", "-2", "-3", "-4", "-5", "-6"};
-	private static final String[] conditions = {"Outspeed", "Survive", "Knock Out", "Underspeed"};
+	private static final String[] conditionsdef = {"Outspeed", "Survive", "Knock Out", "Underspeed", "2HKO", "Survive 2"};
 	private static final String[] weathers = {"None", "Rain", "Sun", "Sand", "Hail"};
 	private static final String[] terrains = {"None", "Misty", "Grassy", "Electric", "Psychic"};
 	private static final String[] status = {"Healthy", "Burn", "Paralyze", "Freeze", "Poison", "Toxic"};
@@ -76,7 +76,7 @@ public class CalculatorController {
 	@GetMapping("/")
 	public String getCalculator(Model model) {
 		model.addAttribute("boosts", boosts);
-		model.addAttribute("conditions", conditions);
+		model.addAttribute("conditions", conditionsdef);
 		model.addAttribute("weathers", weathers);
 		model.addAttribute("terrains", terrains);
 		model.addAttribute("natures", apiServ.getNatures());
@@ -86,54 +86,85 @@ public class CalculatorController {
 	
 	@PostMapping("/")
 	public String calculateResult(HttpServletRequest request, Model model) {
+		boolean valid = true;
+		
+		
 		Pokemon defendingPokemon = apiServ.getPokemon(apiServ.lowerStringRemoveDashes(request.getParameter("calcpokemon")));
-		defendingPokemon.setLevel(Integer.parseInt(request.getParameter("level")));
-		System.out.println("Level: "+defendingPokemon.getLevel());
-		defendingPokemon.setAbility(new Ability(apiServ.lowerStringRemoveDashes(request.getParameter("ability"))));
-		defendingPokemon.setItem(apiServ.lowerStringRemoveDashes(request.getParameter("item")));
-		defendingPokemon.setStatus(request.getParameter("stat"));
-
-		if (request.getParameter("nature-pokemon").equals("undecided")) {
-			defendingPokemon.setNature(null);
+		if (defendingPokemon == null) {
+			valid = false;
+			model.addAttribute("defPokemonError", true);
 		}
 		else {
-			defendingPokemon.setNature(apiServ.getNature(request.getParameter("nature-pokemon")));
+			model.addAttribute("defPokemon", defendingPokemon);
+			defendingPokemon.setLevel(Integer.parseInt(request.getParameter("level")));
+			defendingPokemon.setAbility(new Ability(apiServ.lowerStringRemoveDashes(request.getParameter("ability"))));
+			defendingPokemon.setItem(apiServ.lowerStringRemoveDashes(request.getParameter("item")));
+			defendingPokemon.setStatus(request.getParameter("status"));
+			if (request.getParameter("nature-pokemon").equals("undecided")) {
+				defendingPokemon.setNature(null);
+			}
+			else {
+				defendingPokemon.setNature(apiServ.getNature(request.getParameter("nature-pokemon")));
+			}
 		}
 		int counter = 1;
 		List<Condition> conditions = new ArrayList<Condition>();
 		while(request.getParameter("pokemon-"+counter) != null) {
 			Condition condition = new Condition();
+			condition.setCond(request.getParameter("condition-"+counter));
 			Pokemon condPokemon = apiServ.getPokemon(apiServ.lowerStringRemoveDashes(request.getParameter("pokemon-"+counter)));
-			condPokemon.setAbility(new Ability(apiServ.lowerStringRemoveDashes(request.getParameter("ability-"+counter))));
-			condPokemon.setItem(apiServ.lowerStringRemoveDashes(request.getParameter("item-"+counter)));
-			condPokemon.setLevel(Integer.parseInt(request.getParameter("level-"+counter)));
-			condPokemon.setStatus(request.getParameter("status-"+counter));
-			condPokemon.getStats().get(0).setIv(Integer.parseInt(request.getParameter("hp-iv-"+counter)));
-			condPokemon.getStats().get(0).setEffort(Integer.parseInt(request.getParameter("hp-"+counter)));
-			condition.setDoubles(request.getParameter("single-double").equals("double"));
-			Move move = apiServ.getMove(apiServ.lowerStringRemoveDashes(request.getParameter("move-"+counter)));
-			if (move.getDamageClass().getIdentifier().equals("physical")) {
-				condPokemon.getStats().get(1).setIv(Integer.parseInt(request.getParameter("atk-iv-"+counter)));
-				condPokemon.getStats().get(1).setEffort(Integer.parseInt(request.getParameter("atk-"+counter)));			
-				condPokemon.getStats().get(2).setIv(Integer.parseInt(request.getParameter("def-iv-"+counter)));
-				condPokemon.getStats().get(2).setEffort(Integer.parseInt(request.getParameter("def-"+counter)));
+			if (condPokemon == null) {
+				valid = false;
+				model.addAttribute("condPokemon"+counter+"Error", true);
 			}
 			else {
-				condPokemon.getStats().get(3).setIv(Integer.parseInt(request.getParameter("atk-iv-"+counter)));
-				condPokemon.getStats().get(3).setEffort(Integer.parseInt(request.getParameter("atk-"+counter)));
-				condPokemon.getStats().get(4).setIv(Integer.parseInt(request.getParameter("def-iv-"+counter)));
-				condPokemon.getStats().get(4).setEffort(Integer.parseInt(request.getParameter("def-"+counter)));
+				condPokemon.setAbility(new Ability(apiServ.lowerStringRemoveDashes(request.getParameter("ability-"+counter))));
+				condPokemon.setItem(apiServ.lowerStringRemoveDashes(request.getParameter("item-"+counter)));
+				condPokemon.setLevel(Integer.parseInt(request.getParameter("level-"+counter)));
+				condPokemon.setStatus(request.getParameter("status-"+counter));
+				condPokemon.getStats().get(0).setIv(Integer.parseInt(request.getParameter("hp-iv-"+counter)));
+				condPokemon.getStats().get(0).setEffort(Integer.parseInt(request.getParameter("hp-"+counter)));
+				condPokemon.setNature(apiServ.getNature(apiServ.lowerStringRemoveDashes(request.getParameter("nature-"+counter))));
+				condPokemon.getStats().get(5).setIv(Integer.parseInt(request.getParameter("speed-iv-"+counter)));
+				condPokemon.getStats().get(5).setEffort(Integer.parseInt(request.getParameter("speed-"+counter)));			
+				Move move = apiServ.getMove(apiServ.lowerStringRemoveDashes(request.getParameter("move-"+counter)));
+				if (move == null) {
+					if (!(condition.getCond().equals("Outspeed") || condition.getCond().equals("Underspeed"))) {
+						model.addAttribute("move"+counter+"Error", true);
+						valid = false;
+					}
+				}
+				else {
+					if (move.getDamageClass().getIdentifier().equals("physical")) {
+						condPokemon.getStats().get(1).setIv(Integer.parseInt(request.getParameter("atk-iv-"+counter)));
+						condPokemon.getStats().get(1).setEffort(Integer.parseInt(request.getParameter("atk-"+counter)));			
+						condPokemon.getStats().get(2).setIv(Integer.parseInt(request.getParameter("def-iv-"+counter)));
+						condPokemon.getStats().get(2).setEffort(Integer.parseInt(request.getParameter("def-"+counter)));
+					}
+					else {
+						condPokemon.getStats().get(3).setIv(Integer.parseInt(request.getParameter("atk-iv-"+counter)));
+						condPokemon.getStats().get(3).setEffort(Integer.parseInt(request.getParameter("atk-"+counter)));
+						condPokemon.getStats().get(4).setIv(Integer.parseInt(request.getParameter("def-iv-"+counter)));
+						condPokemon.getStats().get(4).setEffort(Integer.parseInt(request.getParameter("def-"+counter)));
+					}
+				}
 			}
-			condPokemon.setNature(apiServ.getNature(apiServ.lowerStringRemoveDashes(request.getParameter("nature-"+counter))));
-			condPokemon.getStats().get(5).setIv(Integer.parseInt(request.getParameter("speed-iv-"+counter)));
-			condPokemon.getStats().get(5).setEffort(Integer.parseInt(request.getParameter("speed-"+counter)));			
+			condition.setDoubles(request.getParameter("single-double").equals("double"));
 			condition.setPokemon(condPokemon);
 			condition.setGeneration(Integer.parseInt(request.getParameter("generation")));
-			condition.setCond(request.getParameter("condition-"+counter));
 			condition.setOppBoost(request.getParameter("boost-opp-"+counter));
 			condition.setYourBoost(request.getParameter("boost-you-"+counter));
 			condition.setWeather(request.getParameter("weather-"+counter));
 			condition.setTerrain(request.getParameter("terrain-"+counter));
+			if (request.getParameter("z-"+counter) != null) {
+				condition.setZ(true);
+			}
+			if (request.getParameter("dynamax-self-"+counter) != null) {
+				condition.setSelfDmax(true);
+			}
+			if (request.getParameter("dynamax-opp-"+counter) != null) {
+				condition.setOppDmax(true);
+			}
 			if (request.getParameter("screen-"+counter) != null) {
 				condition.setScreens(true);
 			}
@@ -167,6 +198,17 @@ public class CalculatorController {
 			conditions.add(condition);
 		}
 		
+		if (!valid) {
+			model.addAttribute("allConditions", conditions);
+			model.addAttribute("errors", true);
+			model.addAttribute("boosts", boosts);
+			model.addAttribute("conditions", conditionsdef);
+			model.addAttribute("weathers", weathers);
+			model.addAttribute("terrains", terrains);
+			model.addAttribute("natures", apiServ.getNatures());
+			model.addAttribute("status", status);
+			return "calculator.jsp";
+		}
 		
 		HashMap<String, Object> result = apiServ.calculateEVs(defendingPokemon, conditions);
 		ArrayList<Object[]> statListX = new ArrayList<Object[]>();
@@ -194,7 +236,6 @@ public class CalculatorController {
 		}
 		model.addAttribute("goodCondition", result.get("goodCond"));
 		model.addAttribute("badCondition", result.get("badCond"));
-
 		
 //		Map<String, String[]> paramMap =  request.getParameterMap();
 //		for(Map.Entry<String, String[]> entry : paramMap.entrySet()) {
