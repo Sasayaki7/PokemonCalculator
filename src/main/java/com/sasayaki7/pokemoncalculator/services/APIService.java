@@ -133,7 +133,6 @@ public class APIService {
 	}
 	
 	public Stat getStatByName(String name) {
-		System.out.println(name);
 		List<Stat> tempStat = statRepo.getByName(name);
 		if (tempStat.size() > 0) {
 			return tempStat.get(0);
@@ -221,10 +220,10 @@ public class APIService {
 		String[] bites = {"bite", "crunch", "fire-fang", "fishious-rend", "ice-fang", "jaw-lock", "poison-fang", "psychic-fangs", "thunder-fang"};
 		for (int i = 0; i < bites.length; i++) {
 			if(bites[i].equals(m.getIdentifier())) {
-				return false;
+				return true;
 			}
 		}
-		return true;
+		return false;
 	}
 	
 	public boolean affectedByToughClaws(Move m) {
@@ -480,7 +479,7 @@ public class APIService {
 
 		//IRON FIST
 		if (!condition.isZ() && !((condition.isSelfDmax() && !atkPokemon.equals(condition.getPokemon()) || (condition.isOppDmax() && atkPokemon.equals(condition.getPokemon()))))){
-			if (this.affectedByIronFist(m)) {
+			if (atkPokemon.getAbility().getIdentifier().equals("iron-fist") &&  this.affectedByIronFist(m)) {
 				multiplier = (multiplier*4915/4096);
 			}
 		}		
@@ -488,7 +487,7 @@ public class APIService {
 		
 		//RECKLESS
 		if (!condition.isZ() && !((condition.isSelfDmax() && !atkPokemon.equals(condition.getPokemon()) || (condition.isOppDmax() && atkPokemon.equals(condition.getPokemon()))))){
-			if (this.affectedByReckless(m)) {
+			if (atkPokemon.getAbility().getIdentifier().equals("reckless") &&  this.affectedByReckless(m)) {
 				multiplier = (multiplier*4915/4096);
 			}
 		}
@@ -496,26 +495,28 @@ public class APIService {
 		
 		//SHEER FORCE
 		if (!condition.isZ() && !((condition.isSelfDmax() && !atkPokemon.equals(condition.getPokemon()) || (condition.isOppDmax() && atkPokemon.equals(condition.getPokemon()))))){
-			if (this.affectedBySheerForce(m)) {
+			if (atkPokemon.getAbility().getIdentifier().equals("sheer-force") &&  this.affectedBySheerForce(m)) {
 				multiplier = (multiplier*5325/4096);
 			}
 		}
+
 		
 		//TOUGH CLAWS
 		if (!condition.isZ() && !((condition.isSelfDmax() && !atkPokemon.equals(condition.getPokemon()) || (condition.isOppDmax() && atkPokemon.equals(condition.getPokemon()))))){
-			if (this.affectedByToughClaws(m)) {
+			if (atkPokemon.getAbility().getIdentifier().equals("tough-claws") &&  this.affectedByToughClaws(m)) {
 				multiplier = (multiplier*5325/4096);
 			}
-		}
-		
+		}		
 		
 		//FAIRY/DARK AURA
 		if ((condition.isDarkAura() && m.getType().getIdentifier().equals("dark")) || (condition.isFairyAura() && m.getType().getIdentifier().equals("fairy"))) {
 			multiplier = (multiplier*5448/4096);
 		}
 		
+
+		
 		//TECHNICIAN
-		if (m.getPower()*multiplier <= 60 && atkPokemon.getAbility().getIdentifier().equals("technician")) {
+		if (m.getPower()*multiplier/4096 <= 60 && atkPokemon.getAbility().getIdentifier().equals("technician")) {
 			multiplier = (multiplier*6144/4096);
 		}
 		
@@ -529,7 +530,6 @@ public class APIService {
 			multiplier = (multiplier*6144/4096);
 		}
 		
-		
 		//DRAGON'S MAW
 		if (atkPokemon.getAbility().getIdentifier().equals("dragons-maw") && m.getType().getIdentifier().equals("dragon")) {
 			multiplier = (multiplier*6144/4096);
@@ -542,7 +542,7 @@ public class APIService {
 		
 		//STRONG JAW
 		if (!condition.isZ() && !((condition.isSelfDmax() && !atkPokemon.equals(condition.getPokemon()) || (condition.isOppDmax() && atkPokemon.equals(condition.getPokemon()))))){
-			if (this.affectedByStrongJaw(m)) {
+			if (atkPokemon.getAbility().getIdentifier().equals("strong-jaw") &&  this.affectedByStrongJaw(m)) {
 				multiplier = (multiplier*6144/4096);
 			}
 		}
@@ -550,7 +550,7 @@ public class APIService {
 		
 		//MEGA LAUNCHER
 		if (!condition.isZ() && !((condition.isSelfDmax() && !atkPokemon.equals(condition.getPokemon()) || (condition.isOppDmax() && atkPokemon.equals(condition.getPokemon()))))){
-			if (this.affectedByMegaLauncher(m)) {
+			if (atkPokemon.getAbility().getIdentifier().equals("mega-launcher") &&  this.affectedByMegaLauncher(m)) {
 				multiplier = (multiplier*6144/4096);
 			}
 		}
@@ -569,6 +569,7 @@ public class APIService {
 		if ((atkPokemon.getItem().equals("wise-glasses") && m.getDamageClass().getIdentifier().equals("special")) || (atkPokemon.getItem().equals("muscle-band") && m.getDamageClass().getIdentifier().equals("physical"))) {
 			multiplier = (multiplier*4505/4096);
 		}
+		
 		
 		//TYPE BOOSTING ITEM
 		if (m.getType().getIdentifier().equals("ground") && (atkPokemon.getItem().equals("soft-sand") || atkPokemon.getItem().equals("earth-plate"))){
@@ -794,7 +795,9 @@ public class APIService {
 		//-----------------------------------------------------------
 		//------------------TODO: MUD/WATER SPORTS-------------------
 		//-----------------------------------------------------------
-		
+		//System.out.println(multiplier+" BP: "+basePower);
+		basePower = pokeRound(multiplier * basePower /  4096.0);
+		//System.out.println(basePower);
 		
 		//------------------------------------------------------------------------------------
 		//-----------------------------END BASE POWER------------------------------------------
@@ -828,13 +831,26 @@ public class APIService {
 		//UNAWARE, CRITS AND BOOSTS
 		if (!defPokemon.getAbility().getIdentifier().equals("unaware")) {
 			if (condition.isCritical()) {
-				if (atkPokemon.equals(condition.getPokemon())) {
-					atkBoost = Math.max(1, condition.getOppBoost());
+				if (atkPokemon.equals(condition.getPokemon()) || (defPokemon.equals(condition.getPokemon()) && m.getIdentifier().equals("foul-play"))) {
+					attack = (int) Math.floor(attack *Math.max(1, condition.getOppBoost()));
 				}
 				else {
-					atkBoost = Math.max(1, condition.getYourBoost());
+					attack = (int) Math.floor(attack*Math.max(1, condition.getYourBoost()));
 				}
 			}
+			else {
+				if (atkPokemon.equals(condition.getPokemon()) || (defPokemon.equals(condition.getPokemon()) && m.getIdentifier().equals("foul-play"))) {
+					attack = (int) Math.floor(attack * condition.getOppBoost());
+				}
+				else {
+					attack = (int) Math.floor(attack* condition.getYourBoost());
+				}
+			}
+		}
+		
+		//HUSTLE
+		if (atkPokemon.getAbility().getIdentifier().equals("hustle")) {
+			attack = pokeRound(attack*6144/4096.0);
 		}
 		
 		double attackMultiplier = 4096.0;
@@ -917,23 +933,105 @@ public class APIService {
 			attackMultiplier = attackMultiplier*8192/4096;
 		}
 		
-		if (condition.isCritical()) {
-			if (atkPokemon.equals(condition.getPokemon())) {
-				return (int)Math.floor(Math.floor(Math.floor((2*atkPokemon.getLevel()/5)+2)*basePower*attack*Math.max(1, condition.getOppBoost())/(defense*Math.min(1, condition.getYourBoost()))))/50+2;
+		attack = pokeRound(attack * attackMultiplier/ 4096.0);
+		
+		
+		//-------------------------------------------------------------------
+		//-------------------------END ATTACK MULTIPLIER---------------------
+		//-------------------------------------------------------------------
+
+		//-------------------------------------------------------------------
+		//-------------------------START DEFENSE MULTIPLIER------------------
+		//-------------------------------------------------------------------		
+		
+
+		int defenseMultiplier = 4096;
+		
+		//UNAWARE
+		//UNAWARE, CRITS AND BOOSTS
+		if (!(atkPokemon.getAbility().getIdentifier().equals("unaware") || condition.getMove().getIdentifier().equals("sacred-sword") || condition.getMove().getIdentifier().equals("chip-away"))) {
+			if (condition.isCritical()) {
+				if (defPokemon.equals(condition.getPokemon())) {
+					defense= (int) Math.floor(defense *Math.min(1, condition.getOppBoost()));
+				}
+				else {
+					defense = (int) Math.floor(defense*Math.min(1, condition.getYourBoost()));
+				}
 			}
 			else {
-				return (int)Math.floor(Math.floor(Math.floor((2*atkPokemon.getLevel()/5)+2)*basePower*attack*Math.max(1, condition.getYourBoost())/(defense*Math.min(1, condition.getOppBoost()))))/50+2;
+				if (defPokemon.equals(condition.getPokemon())) {
+					defense = (int) Math.floor(defense* condition.getOppBoost());
+				}
+				else {
+					defense = (int) Math.floor(defense* condition.getYourBoost());
+				}
 			}
 		}
-		
-		
-		
-		if (atkPokemon.equals(condition.getPokemon())) {
-			return (int)Math.floor(Math.floor(Math.floor((2*atkPokemon.getLevel()/5)+2)*basePower*attack*condition.getOppBoost()/(defense*condition.getYourBoost())))/50+2;
+
+		//SAND AND ROCK
+		if (defPokemon.isType("rock") && condition.getWeather().equals("Sand")) {
+			defense = pokeRound(defense * 6144/4096.0);
 		}
-		else {
-			return (int)Math.floor(Math.floor(Math.floor((2*atkPokemon.getLevel()/5)+2)*basePower*attack*condition.getYourBoost()/(defense*condition.getOppBoost())))/50+2;
+		
+		//FLOWER GIFT
+		if (condition.isFlowerGift() && !isMovePhysical(condition.getMove())) {
+			defenseMultiplier = defenseMultiplier * 6144/4096;
 		}
+		
+		//GRASS PELT
+		if (condition.getTerrain().equals("Grassy") && defPokemon.getAbility().getIdentifier().equals("grass-pelt") && isMovePhysical(condition.getMove())) {
+			defenseMultiplier = defenseMultiplier * 6144/4096;
+		}
+		
+		//MARVEL SCALE
+		if (defPokemon.getAbility().getIdentifier().equals("marvel-scale") && isMovePhysical(condition.getMove())) {
+			defenseMultiplier = defenseMultiplier * 6144/4096;
+		}
+		
+		//FUR COAT
+		if (defPokemon.getAbility().getIdentifier().equals("fur-coat") && isMovePhysical(condition.getMove())) {
+			defenseMultiplier = defenseMultiplier * 8192/4096;
+		}
+		
+		//---------------NEEDS WORK----------------------------
+		//EVIOLITE 
+		if (defPokemon.getItem().equals("eviolite")) {
+			defenseMultiplier = defenseMultiplier * 6144/4096;
+		}
+		
+		
+		//ASSAULT VEST
+		if (defPokemon.getItem().equals("assault-vest") && !isMovePhysical(condition.getMove())) {
+			defenseMultiplier = defenseMultiplier * 6144/4096;
+		}
+		
+		
+		//DEEP SEA SCALE
+		if (defPokemon.getItem().equals("deep-sea-scale") && !isMovePhysical(condition.getMove()) && defPokemon.getIdentifier().equals("clamperl")) {
+			defenseMultiplier = defenseMultiplier * 8192/4096;
+		}
+		
+		
+		//METAL POWDER
+		if (defPokemon.getItem().equals("metal-powder") && isMovePhysical(condition.getMove()) && defPokemon.getIdentifier().equals("ditto")) {
+			defenseMultiplier = defenseMultiplier * 8192/4096;
+		}
+		
+		defense = (int) pokeRound(defense * defenseMultiplier/4096.0);
+		
+		//System.out.println("Defense/SpD: "+defense+" Multiplier: "+defenseMultiplier);
+		//-------------------------------------------------------------------
+		//-------------------------END DEFENSE MULTIPLIER--------------------
+		//-------------------------------------------------------------------
+		
+		int level1 = (int) Math.floor(2*atkPokemon.getLevel()/5+2);
+		int level2 = (int) Math.floor(level1*basePower*attack/defense);
+		//System.out.println(level1+" BP: "+basePower+" DEFMULT: "+defenseMultiplier);
+
+		int level3 = (int) Math.floor(level2/50);
+		//System.out.println(level3+2);
+
+		return level3+2;
 	}
 	
 	public String getMaxName(Type t) {
@@ -977,10 +1075,11 @@ public class APIService {
 		}
 
 		int damage = calculateBaseDamage(condition, atkPokemon, defPokemon);
+		//System.out.println(damage);
 		
 		//General modifiers
 		
-		if (condition.isDoubles() && !m.getDamageClass().getIdentifier().equals("selected-pokemon")) {
+		if (condition.isDoubles() && !(m.getTarget().getIdentifier().equals("selected-pokemon"))) {
 			damage = pokeRound(damage*3072.0/4096);
 		}
 		
@@ -1020,21 +1119,36 @@ public class APIService {
 			damage = (int) Math.floor(damage*0.85);
 		}
 		
+		
+		//STAB
 		if (atkPokemon.isType(m.getType().getIdentifier())) {
 			if (atkPokemon.getAbility().getIdentifier().equals("adaptability")) {
-				damage *=2;
+				damage = pokeRound(damage * 8192 / 4096.0);
 			}
 			else {
-				damage = pokeRound(damage*6144.0/4096);
+				damage = pokeRound(damage*6144/4096.0);
 			}
 		}
 		
 		double modifier = defPokemon.getEffectivenessFrom(m.getType());
+
 		if (m.getIdentifier().equals("freeze-dry") && defPokemon.isType("water")) {
 			modifier = modifier * 4;
 		}
 		else if ((m.getIdentifier().equals("thousand-arrows") || defPokemon.getItem().equals("iron-ball")) && defPokemon.isType("flying")) {
 			modifier = 1.0;
+		}
+		if (modifier > 1.1) {
+			damage = damage << 1;
+			if (modifier > 3) {
+				damage = damage << 1;
+			}
+		}
+		else if (modifier < 0.9) {
+			damage = damage >> 1;
+			if (modifier < 0.4) {
+				damage = damage >> 1;
+			}
 		}
 		
 		//----------------------------------------------------------------------
@@ -1042,7 +1156,6 @@ public class APIService {
 		//----------------------------------------------------------------------
 
 		
-		damage = (int) (damage*modifier);
 		
 		double finalModifier = 4096/4096;
 		
@@ -1445,11 +1558,14 @@ public class APIService {
 			int currentDef = (Integer) defStack.get(0).get("defense");
 			int currentSpD = (Integer) spdStack.get(0).get("special-defense");
 			int totalStat = currentHp+currentDef+currentSpD;
+			System.out.println(currentHp+" "+ currentSpD +" "+ currentDef);
 			for (int i = 0; i < spdStack.size(); i++) {
 				for (int j = 0; j < defStack.size(); j++) {
 					int testDef = (Integer) spdStack.get(i).get("special-defense");
 					int testHp = Math.max((Integer) spdStack.get(i).get("hp"), (Integer) defStack.get(j).get("hp"));
 					int testSpd = (Integer) defStack.get(j).get("defense");
+					System.out.println("Test: "+ testHp+" "+ testSpd +" "+ testDef);
+
 					if (totalStat > testDef+testHp+testSpd || (totalStat == testDef+testHp+testSpd && currentHp < testHp)) {
 						totalStat = testDef+testHp+testSpd;
 						currentHp = testHp;
@@ -1534,45 +1650,45 @@ public class APIService {
 	public String summarizeCondition(Pokemon dPoke, Condition c) {
 		String summary = c.getCond()+" ";
 		if (!c.getRawOppBoost().equals("0")) {
-			summary += "at "+c.getRawOppBoost();
+			summary += c.getRawOppBoost()+" ";
 
 		}
 		if (c.getCond().equals("Knock Out") || c.getCond().equals("2HKO")) {
 			summary += c.getPokemon().getStats().get(0).getEffort() + " HP ";
 			if (this.isMovePhysical(c.getMove())) {
 				summary += c.getPokemon().getStats().get(2).getEffort();
-				if (c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("defense")) {
-					summary+="+";
+				if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("defense")) {
+					summary+="+ ";
 				}
 				summary+= " Def ";
 			}
 			else {
 				summary += c.getPokemon().getStats().get(4).getEffort();
-				if (c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-defense")) {
-					summary+="+";
+				if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-defense")) {
+					summary+="+ ";
 				}
 				summary+= " SpD ";
 			}
 		}
 		else if (c.getCond().equals("Outspeed")) {
 			summary += c.getPokemon().getStats().get(5).getEffort();
-			if (c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("speed")) {
-				summary +="+";
+			if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("speed")) {
+				summary +="+ ";
 			}
 			summary += " Speed ";
 		}
 		else if (c.getCond().equals("Survive") || c.getCond().equals("Survive 2")) {
 			if (c.getMove().getDamageClass().getIdentifier().equals("physical")) {
 				summary += c.getPokemon().getStats().get(1).getEffort();
-				if (c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("attack")) {
-					summary+="+";
+				if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("attack")) {
+					summary+="+ ";
 				}
 				summary+= " Atk ";
 			}
 			else {
 				summary += c.getPokemon().getStats().get(3).getEffort();
-				if (c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-attack")) {
-					summary+="+";
+				if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-attack")) {
+					summary+="+ ";
 				}
 				summary+= " SpA ";
 			}
@@ -1581,7 +1697,7 @@ public class APIService {
 		summary+= c.getPokemon().getAbility().getIdentifierCleaned();
 
 		if (!(c.getPokemon().getItem() == null)) {
-			summary += " "+c.getPokemon().getItemCleaned();
+			summary += " "+c.getPokemon().getItemCleaned()+" ";
 		}
 		
 		summary += c.getPokemon().getIdentifierCleaned();
@@ -1595,10 +1711,13 @@ public class APIService {
 			}
 		}
 		else {
-			if(c.isCritical()) {
-				summary+=" with Crit ";
+			if (c.getCond().equals("Knock Out") || c.getCond().equals("2HKO")) {
+				summary += " with";
 			}
-			summary += " with "+c.getMove().getIdentifier();
+			if(c.isCritical()) {
+				summary+=" Crit ";
+			}
+			summary += " "+c.getMove().getIdentifierCleaned();
 		}
 		if (c.isFriendGuard()) {
 			summary += " with Friend Guard";
@@ -1625,6 +1744,7 @@ public class APIService {
 	
 	
 	public HashMap<String, Object> calculateEVs(Pokemon defPokemon, List<Condition> condition){
+
 		List<ArrayList<Stat>> lists = new ArrayList<ArrayList<Stat>>();
 		ArrayList<Object> conditionList = new ArrayList<Object>();
 		String personality;
@@ -1732,6 +1852,9 @@ public class APIService {
 				}
 				for (int j = 0; j < 3; j++) {
 					Nature n = natures[j];
+					for (Stat s: defPokemon.getStats()) {
+						s.setEffort(0);
+					}
 					defPokemon.setNature(n);
 					boolean found = false;
 					for (int i = 0; i <= 252; i+= 4) {
@@ -1747,8 +1870,8 @@ public class APIService {
 							defPokemon.getStats().get(3).setEffort(i);
 						}
 						int dmg = calculateDamage(c, defPokemon);
-						System.out.println("Damage: "+dmg+" Healed: "+ ((int) (c.getPokemon().getHP()*c.getHealth()/100-dmg) - this.healAfterTurn(c.getPokemon(), c, (int) (c.getPokemon().getHP()*c.getHealth()/100-dmg)))+" Total: "+((int) (c.getPokemon().getHP()*c.getHealth()/100-dmg)- (this.healAfterTurn(defPokemon, c, (int) (c.getPokemon().getHP()*c.getHealth()/100-dmg))-dmg))) ;
-						System.out.println("SpA: "+i+" Nature: "+n.getIdentifierCleaned());
+						//System.out.println("Damage: "+dmg+" Healed: "+ ((int) (c.getPokemon().getHP()*c.getHealth()/100-dmg) - this.healAfterTurn(c.getPokemon(), c, (int) (c.getPokemon().getHP()*c.getHealth()/100-dmg)))+" Total: "+((int) (c.getPokemon().getHP()*c.getHealth()/100-dmg)- (this.healAfterTurn(defPokemon, c, (int) (c.getPokemon().getHP()*c.getHealth()/100-dmg))-dmg))) ;
+						//System.out.println("SpA: "+i+" Nature: "+n.getIdentifierCleaned());
 						if (dmg >= c.getPokemon().getHP()*c.getHealth()/100 || (c.getCond().equals("2HKO") && this.healAfterTurn(c.getPokemon(), c, (int) (c.getPokemon().getHP()*c.getHealth()/100-dmg))-dmg <= 0)){
 							HashMap<String, Object> x = new HashMap<String, Object>();
 							
@@ -1806,6 +1929,9 @@ public class APIService {
 					
 				}
 				for (int j = 0; j < 3; j++) {
+					for (Stat s: defPokemon.getStats()) {
+						s.setEffort(0);
+					}
 					Nature n = natures[j];
 					defPokemon.setNature(n);
 					boolean found = false;
@@ -1896,10 +2022,15 @@ public class APIService {
 					ArrayList<HashMap<String, Object>> storage = new ArrayList<HashMap<String, Object>>();
 					boolean found = false;
 					int maxHP = -1;
+					for (Stat s: defPokemon.getStats()) {
+						s.setEffort(0);
+					}
 					defPokemon.setNature(natures[i]);
 					for (int hp = 0; hp <= 252; hp+=4) {
 						defPokemon.getStats().get(0).setEffort(hp);
 						int damage = calculateDamage(c, defPokemon);
+						//System.out.println("HP: "+ hp+" Def/SpD: 0"+" Nature: "+natures[i].getIdentifierCleaned());
+						//System.out.println(c.getPokemon().getIdentifierCleaned()+": "+ damage);
 						if (damage < defPokemon.getHP()*c.getHealth()/100 || 
 								(c.getCond().equals("Survive 2") && damage+ this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100-damage)) < defPokemon.getHP()*c.getHealth()/100)){
 							found = true;
@@ -1914,6 +2045,9 @@ public class APIService {
 								sx.put("special-defense", 0);
 							}
 							storage.add(sx);
+							System.out.println("HP: "+ hp+" Def/SpD: "+defPokemon.getStats().get(2).getEffort()+"/"+defPokemon.getStats().get(4).getEffort() +" Nature: "+natures[i].getIdentifierCleaned()+" HP%: "+defPokemon.getHP()+" "+c.getHealth());
+							System.out.println("HP: "+ hp+" Def/SpD: 0"+" Nature: "+natures[i].getIdentifierCleaned()+" HP%: "+defPokemon.getHP()+" "+c.getHealth());
+							System.out.println(c.getPokemon().getIdentifierCleaned()+": "+ damage);
 							break;
 						}
 					}
@@ -1929,6 +2063,8 @@ public class APIService {
 									defPokemon.getStats().get(4).setEffort(def);
 								}
 								int damage = calculateDamage(c, defPokemon);
+								//System.out.println("HP: "+ hp+" Def/SpD: "+def+" Nature: "+natures[i].getIdentifierCleaned());
+								//System.out.println(c.getPokemon().getIdentifierCleaned()+": "+ damage);
 								if (damage < defPokemon.getHP()*c.getHealth()/100 ||
 										(c.getCond().equals("Survive 2") && damage*2 - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100-damage)) < defPokemon.getHP()*c.getHealth()/100)){
 									lastDef = def;
@@ -1942,14 +2078,17 @@ public class APIService {
 										sx.put("special-defense", def);
 									}
 									storage.add(sx);
+									System.out.println("HP: "+ hp+" Def/SpD: "+def+" Nature: "+natures[i].getIdentifierCleaned());
+									System.out.println(c.getPokemon().getIdentifierCleaned()+": "+ damage);
 									break;
 								}
 							}
 						}
 					}
 					else {
+						int lastHp = 252;
 						for (int def = 0; def <= 252; def+=4) {
-							for (int hp = 252; hp >= 0; hp -=4) {
+							for (int hp = lastHp; hp >= 0; hp -=4) {
 								defPokemon.getStats().get(0).setEffort(hp);
 								if (isMovePhysical(c.getMove())) {
 									defPokemon.getStats().get(2).setEffort(def);
@@ -1959,19 +2098,25 @@ public class APIService {
 								}
 								int damage = calculateDamage(c, defPokemon);
 
-								if (damage < defPokemon.getHP()*c.getHealth()/100 || 
-										(c.getCond().equals("Survive 2") && damage*2 - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100-damage)) < defPokemon.getHP()*c.getHealth()/100)){
+								//System.out.println("HP: "+ hp+" Def/SpD: "+def+" Nature: "+natures[i].getIdentifierCleaned());
+								//System.out.println(c.getPokemon().getIdentifierCleaned()+": "+ damage);
+
+								if (damage >= defPokemon.getHP()*c.getHealth()/100 || 
+										(c.getCond().equals("Survive 2") && damage*2 - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100-damage)) >= defPokemon.getHP()*c.getHealth()/100)){
 									if (hp != 252) {
 										HashMap<String, Object> sx = new HashMap<String, Object>();
-										sx.put("hp", hp);
+										sx.put("hp", hp+4);
 										sx.put("nature", natures[i]);
 										if (isMovePhysical(c.getMove())) {
-											sx.put("defense", def+4);
+											sx.put("defense", def);
 										}
 										else {
-											sx.put("special-defense", def+4);
+											sx.put("special-defense", def);
 										}
+										System.out.println("HP: "+ hp+" Def/SpD: "+def+" Nature: "+natures[i].getIdentifierCleaned());
+										System.out.println(c.getPokemon().getIdentifierCleaned()+": "+ damage);
 										storage.add(sx);
+										lastHp = hp;
 									}
 									break;
 								}
@@ -2215,7 +2360,7 @@ public class APIService {
 		do {
 			
 			res = calcAllEVs(attacks, defense, spas, spds, speed, nat, natureIfNull);
-
+			//System.out.println(Arrays.toString(res));
 			if (res[6] > 508) {
 				int highest = 0;
 				int highestidx = 0;
@@ -2396,7 +2541,7 @@ public class APIService {
 		
 		//TODO: We found Stats to increase and lower, as well as difference in stats. Now we need to implement the difference function.
 		Nature suggestedNature = natureRepo.findNatureWithStats(statToHinder, statToBoost);
-		System.out.println(suggestedNature.getIdentifier());
+		//System.out.println(suggestedNature.getIdentifier());
 		int[] suggestedRes = new int[7];
 		int suggestedTotal = 0;
 		for (int i = 0; i < 6; i++) {

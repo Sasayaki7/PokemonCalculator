@@ -101,7 +101,7 @@ function createListOfAutoComplete(list, div){
 
 
 function getMovesStartingWith(s, node){
-	fetch(`http://localhost:8080/api/moves?startWith=${s}`)
+	fetch(`/api/moves?startWith=${s}`)
 		.then(resp => resp.json())
 		.then(resp => {
 			createListOfAutoComplete(resp, node.parentNode.querySelector('.item-autocomplete'))
@@ -111,7 +111,7 @@ function getMovesStartingWith(s, node){
 
 function getPokemonStartingWith(s, node){
 	console.log(s)
-	fetch(`http://localhost:8080/api/pokemon?startWith=${s}`)
+	fetch(`/api/pokemon?startWith=${s}`)
 		.then(resp => resp.json())
 		.then(resp => {
 			createListOfAutoComplete(resp, node.parentNode.querySelector('.item-autocomplete'))
@@ -121,7 +121,7 @@ function getPokemonStartingWith(s, node){
 
 
 function getItemsStartingWith(s, node){
-	fetch(`http://localhost:8080/api/items?startWith=${s}`)
+	fetch(`/api/items?startWith=${s}`)
 		.then(resp => resp.json())
 		.then(resp => {
 			createListOfAutoComplete(resp, node.parentNode.querySelector('.item-autocomplete'))

@@ -50,8 +50,8 @@
 		<div class="form-div">
 			<div class="left-pokemon">
 				<div class="item-pokemon-display">
-					<img id="pokemon-pic" <c:choose> <c:when test="${errors and not defPokemonError}"> src="https://play.pokemonshowdown.com/sprites/xyani/${defPokemon.getIdentifierNoSpace()}.gif" </c:when><c:otherwise> src="" </c:otherwise></c:choose> alt=""/>
-					<img id="item-pic" <c:choose> <c:when test="${errors and not defPokemonError}"> src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${defPokemon.getItem()}.png" </c:when><c:otherwise> src="" </c:otherwise></c:choose> alt=""/>
+					<img id="pokemon-pic" <c:choose> <c:when test="${errors and not defPokemonError}"> src="https://play.pokemonshowdown.com/sprites/xyani/${defPokemon.getIdentifierNoSpace()}.gif" </c:when><c:otherwise> src="#" </c:otherwise></c:choose> alt=""/>
+					<img id="item-pic" <c:choose> <c:when test="${errors and not defPokemonError}"> src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${defPokemon.getItem()}.png" </c:when><c:otherwise> src="#" </c:otherwise></c:choose> alt=""/>
 				</div>
 				<div class="type-pokemon"><c:if test="${errors and not defPokemonError}">
 					<c:forEach var="type" items = "${defPokemon.types}">
@@ -132,8 +132,8 @@
 					   			</div>
 					   			<div class="cell">
 						   			<div class="opp-pokemon-cell">
-						   				<img class="opp-pokemon" <c:choose> <c:when test="${not empty cond.getPokemon()}"> src="https://play.pokemonshowdown.com/sprites/xyani/${cond.getPokemon().getIdentifierNoSpace()}.gif" </c:when><c:otherwise> src="" </c:otherwise></c:choose> alt=""/>
-						   				<img class="opp-item" <c:choose> <c:when test="${not empty cond.getPokemon()}"> src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${cond.getPokemon().getItem()}.png" </c:when><c:otherwise> src="" </c:otherwise></c:choose> alt=""/>
+						   				<img class="opp-pokemon" <c:choose> <c:when test="${not empty cond.getPokemon()}"> src="https://play.pokemonshowdown.com/sprites/xyani/${cond.getPokemon().getIdentifierNoSpace()}.gif" </c:when><c:otherwise> src="#" </c:otherwise></c:choose> alt=""/>
+						   				<img class="opp-item" <c:choose> <c:when test="${not empty cond.getPokemon()}"> src="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/${cond.getPokemon().getItem()}.png" </c:when><c:otherwise> src="#" </c:otherwise></c:choose> alt=""/>
 					   				</div>
 					   				<div class="type-pokemon">
 					   					<c:if test="${not empty cond.getPokemon()}">
@@ -376,8 +376,8 @@
 				   			</div>
 				   			<div class="cell">
 					   			<div class="opp-pokemon-cell">
-						   			<img class="opp-pokemon" alt=""/>
-						   			<img class="opp-item" alt=""/>
+						   			<img class="opp-pokemon" src="#" alt=""/>
+						   			<img class="opp-item" src="#" alt=""/>
 					   			</div>
 					   			<div class="type-pokemon"></div>
 				   				<div class="input-row">
