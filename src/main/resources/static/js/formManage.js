@@ -22,9 +22,10 @@ function changeName(element, index){
 	}
 	else if (element.nodeName == 'INPUT' || element.nodeName == 'SELECT'){
 		element.setAttribute("name",changeStringNumber(element.getAttribute("name"), index));
-		if (element.type =='radio'){
+		if (element.type =='radio' || element.type == 'checkbox'){
 			element.setAttribute("id", changeStringNumber(element.getAttribute("id"), index))
 		}
+		
 	}
 	else if (element.nodeName == 'DIV'){
 		element.setAttribute("id",changeStringNumber(element.getAttribute("id"), index));
@@ -44,9 +45,15 @@ function changeAllNodes(element, index){
 }
 
 function cleanseText(text){
-	return text.replace(" ", "-").toLowerCase();
+	return text.replace(/ /g, "-").toLowerCase();
 }
 
+
+function isMultiHitMove(move){
+	let moves = ["Arm Thrust", "Bone Rush", "Bonemerang", "Bullet Seed", "Double Hit", "Double Iron Bash", "Double Kick", "Dragon Darts", "Dual Chop", "Dual Wingbeat", 
+	"Fury Attack", "Fury Swipes", "Gear Grind", "Icicle Spear", "Pin Missile", "Rock Blast", "Scale Shot", "Surging Strikes", "Tail Slap", "Triple Axel", "Triple Kick", "Water Shuriken"];
+	return moves.includes(move)
+}
 
 function removeDash(s){
 	let arrS = s.split("-")
@@ -75,8 +82,18 @@ function createListOfAutoComplete(list, div){
 		newToggle.classList.add("autocomplete-selector")
 
 		newToggle.addEventListener("click", function(e){
-			let elem = div.parentNode.querySelector("input")
+			let elem = div.parentNode.querySelector("input") 
 			elem.value = removeDash(item)
+			if (elem.name.includes("move")){
+				let movename = removeDash(item)
+				if (isMultiHitMove(movename)){
+					div.parentNode.parentNode.querySelector(".input-row").classList.remove('invisible')
+				}
+				else{
+					div.parentNode.parentNode.querySelector(".input-row").classList.add('invisible')
+					div.parentNode.parentNode.querySelector(".input-row input").value = 1
+				}
+			}
 			if (elem.name.includes("calcpokemon")){
 				getImageForPokemon(elem);
 			}
@@ -110,7 +127,6 @@ function getMovesStartingWith(s, node){
 
 
 function getPokemonStartingWith(s, node){
-	console.log(s)
 	fetch(`/api/pokemon?startWith=${s}`)
 		.then(resp => resp.json())
 		.then(resp => {
@@ -157,35 +173,39 @@ function changeTypes(node, list){
 
 function cleanForImage(str){
 		if (str.indexOf("tapu") != -1) {
-			return str.replace(" ", "");
+			return str.replace("-", "");
 		}
 		else if (str =="type-null"||str=="mr-rime"||str=="mime-jr") {
 			return str.replace("-", "");
 		}
 		else if (str.indexOf("mr-mime") != -1) {
-			return str.replace("mr-mime", "mrmime").replace('-', ' ');
+			return str.replace("mr-mime", "mrmime");
 		}
 		else if (str.indexOf("mega-x") != -1) {
-			return str.replace("mega-x", "megax").replace('-', ' ');
+			return str.replace("mega-x", "megax");
 		}
 		else if (str.indexOf("mega-y") != -1) {
-			return str.replace("mega-y", "megay").replace('-', ' ');
+			return str.replace("mega-y", "megay");
 		}
 		else if (str.indexOf("rapid-strike") != -1) {
-			return str.replace("rapid-strike", "rapidstrike").replace('-', ' ');
+			return str.replace("rapid-strike", "rapidstrike");
 		}
 		else if (str.indexOf("single-strike") != -1) {
-			return str.replace("single-strike", "singlestrike").replace('-', ' ');
+			return str.replace("single-strike", "singlestrike");
+		}
+		else if (str.indexOf("-incarnate") != -1){
+			return str.replace("-incarnate", "");	
 		}
 		else {
-			return str.replace('-', ' ');
+			return str.replace(/ /g, "-");
 		}
 }
 
 function getImageForPokemon(e){
-	let imageCleanseText = cleanForImage(e.value.toLowerCase())
+	let imageCleanseText = cleanForImage(cleanseText(e.value).toLowerCase())
 
 	let cleansedText = cleanseText(e.value)
+	console.log(cleansedText);
 	fetch(`https://pokeapi.co/api/v2/pokemon/${cleansedText}`)
 		.then(resp => resp.json())
 		.then(resp => {document.getElementById("pokemon-pic").src=`https://play.pokemonshowdown.com/sprites/xyani/${imageCleanseText}.gif`
@@ -200,8 +220,10 @@ function getImageForPokemon(e){
 }
 
 function changeOppPokemon(e){
-	let imageCleanseText = cleanForImage(e.value.toLowerCase())
+	let imageCleanseText = cleanForImage(cleanseText(e.value).toLowerCase())
+	console.log(e.value)
 	let cleansedText = cleanseText(e.value)
+	console.log(cleansedText);
 	fetch(`https://pokeapi.co/api/v2/pokemon/${cleansedText}`)
 		.then(resp => resp.json())
 		.then(resp => {
@@ -247,7 +269,7 @@ function changeCondition(e){
 	if (e.value=='Outspeed' || e.value=='Underspeed'){
 		speedShow.classList.remove('invisible')
 	}
-	else if (e.value=='Survive'){
+	else if (e.value=='Survive' || e.value == 'Survive 2'){
 		attackShow.classList.remove('invisible')
 	}
 	else{

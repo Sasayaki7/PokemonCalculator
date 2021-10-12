@@ -122,6 +122,16 @@ public class APIService {
 		}
 	}
 	
+	public Type getType(Long id) {
+		Optional<Type> tempType= typeRepo.findById(id);
+		if (tempType.isPresent()) {
+			return tempType.get();
+		}
+		else {
+			return null;
+		}
+	}
+	
 	public MoveTarget getMoveTarget(String movetarg) {
 		Optional<MoveTarget> tempType= moveTargRepo.findByIdentifier(movetarg);
 		if (tempType.isPresent()) {
@@ -144,6 +154,16 @@ public class APIService {
 		Optional<Nature> tempNature = natureRepo.findByIdentifier(name);
 		if (tempNature.isPresent()) {
 			return tempNature.get();
+		}
+		else {
+			return null;
+		}
+	}
+	
+	public LegacyMove getLegacyMove(String name, int generation) {
+		List<LegacyMove> thing = legacyRepo.getMoveWithGen(name, generation);
+		if (thing.size() > 0) {
+			return thing.get(0);
 		}
 		else {
 			return null;
@@ -216,6 +236,19 @@ public class APIService {
 		return false;
 	}
 	
+	public boolean canKnockOffItem(String item) {
+		String[] items = {"metagrossite", "gengarite", "gardevoirite", "charizardite-x", "venusaurite", "blastoisinite", "mewtwonite-x", "mewtwonite-y", "blazikenite", "medichamite", "houndoominite", "aggronite", "banettite", "tyranitarite", "scizorite", "pinsirite", "aerodactylite", "lucarionite", "abomasite", "kangaskhanite", 
+				"gyaradosite", "absolite", "charizardite-y", "alakazite", "heracronite", "mawilite", "manectite", "garchompite", "latiasite", "latiosite", "swampertite", "sceptilite", "sablenite", "altarianite", "galladite", "audinite", "sharpedonite", "slowbronite", "steelixite", "pidgeotite", "glalitite", "diancite", "camperuptite", "lopunnite", "salamencite", "beedrillite", "griseous-orb", 
+				"normalium-z", "firium-z", "waterium-z", "electrium-z", "grassium-z", "icium-z", "fightinium-z", "poisonium-z", "groundium-z", "flyinium-z", "psychium-z", "buginium-z", "rockium-z", "ghostium-z", "dragonium-z", "darkinium-z", "steelium-z", "fairium-z", "pikanium-z", "decidium-z", "incinium-z", "primarium-z", "tapunium-z", "marshadium-z", "aloraichium-z", "snorlium-z", "eevium-z", "mewnium-z", 
+				"pikashunium-z"};
+		for (int i = 0; i < items.length; i++) {
+			if (item.equals(items[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	public boolean affectedByStrongJaw(Move m) {
 		String[] bites = {"bite", "crunch", "fire-fang", "fishious-rend", "ice-fang", "jaw-lock", "poison-fang", "psychic-fangs", "thunder-fang"};
 		for (int i = 0; i < bites.length; i++) {
@@ -254,59 +287,84 @@ public class APIService {
 		return false;
 	}
 	
-
-	public void convertToZ(Move m) {
+	public boolean ignoresAbilities(Pokemon atkPokemon) {
+		if (atkPokemon.getAbility().getIdentifier().equals("teravolt") || atkPokemon.getAbility().getIdentifier().equals("mold-breaker") || atkPokemon.getAbility().getIdentifier().equals("turboblaze")) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isPokemonFlying(Pokemon pokemon, Condition c) {
+		if (c.isGravity() || c.isSmackDown()) {
+			return false;
+		}
+		if (pokemon.getItem().equals("iron-ball")) {
+			return false;
+		}
+		if (pokemon.isType("flying")) {
+			return true;
+		}
+		if (pokemon.getItem().equals("air-balloon")) {
+			return true;
+		}
+		if (pokemon.getAbility().getIdentifier().equals("levitate")) {
+			return true;
+		}
+		return false;
+	}
+	
+	public int convertToZ(Move m) {
 		int bp = m.getPower();
 		if (m.getIdentifier().equals("v-create")) {
-			m.setPower(220);
+			return 220;
 		}
 		else if (m.getIdentifier().equals("thousand-arrows")) {
-			m.setPower(180);
+			return 180;
 		}
 		else if (m.getIdentifier().equals("hex")) {
-			m.setPower(160);
+			return 160;
 		}
 		else if (m.getIdentifier().equals("mega-drain")) {
-			m.setPower(120);
+			return 120;
 		}
 		else if (m.getIdentifier().equals("gear-grind")) {
-			m.setPower(180);
+			return 180;
 		}
 		else if (m.getIdentifier().equals("core-enforcer")) {
-			m.setPower(140);
+			return 140;
 		}
 		else if (m.getIdentifier().equals("weather-ball")) {
-			m.setPower(160);
+			return 160;
 		}
 		else if (bp <= 55) {
-			m.setPower(100);
+			return 100;
 		}
 		else if (bp <= 65) {
-			m.setPower(120);
+			return 120;
 		}
 		else if (bp <= 75) {
-			m.setPower(140);
+			return 140;
 		}
 		else if (bp <= 85) {
-			m.setPower(160);
+			return 160;
 		}
 		else if (bp <= 95) {
-			m.setPower(175);
+			return 175;
 		}
 		else if (bp <= 100) {
-			m.setPower(180);
+			return 180;
 		}
 		else if (bp <=  110) {
-			m.setPower(185);
+			return 185;
 		}
 		else if (bp <= 125) {
-			m.setPower(190);
+			return 190;
 		}
 		else if (bp <= 130) {
-			m.setPower(195);
+			return 195;
 		}
 		else {
-			m.setPower(200);
+			return 200;
 		}
 	}
 	
@@ -317,13 +375,23 @@ public class APIService {
 		int attack = 0;
 		int defense = 0;
 		int multiplier = 4096;
-		
+		boolean attackerDMax = ((condition.isOppDmax() && condition.getPokemon().equals(atkPokemon)) || (condition.isSelfDmax() && condition.getPokemon().equals(defPokemon)));
+		boolean defenderDMax = ((condition.isSelfDmax() && condition.getPokemon().equals(atkPokemon)) || (condition.isOppDmax() && condition.getPokemon().equals(defPokemon)));
+
 		//---------------------------------------------------------------------------------
 		//-----------------------------BEGIN BASE POWER------------------------------------
 		//---------------------------------------------------------------------------------
 		
+		if (attackerDMax) {
+			basePower = m.getMaxMovePower();
+		}
+		
+		
 		//LOW KICK/GRASS KNOT
 		if (m.getIdentifier().equals("grass-knot") || m.getIdentifier().equals("low-kick")) {
+			if (defenderDMax && ! attackerDMax) {
+				return 0;
+			}
 			if (defPokemon.getWeight() < 100) {
 				m.setPower(20);
 			}
@@ -348,6 +416,9 @@ public class APIService {
 		
 		//HEAVY SLAM/HEAT CRASH
 		if (m.getIdentifier().equals("heavy-slam") || m.getIdentifier().equals("heat-crash")) {
+			if (defenderDMax && ! attackerDMax) {
+				return 0;
+			}
 			if (atkPokemon.getWeight()/defPokemon.getWeight() < 2) {
 				m.setPower(40);
 			}
@@ -384,6 +455,7 @@ public class APIService {
 		//WATER SHURIKEN
 		if (atkPokemon.getIdentifier().equals("ash-greninja") && m.getIdentifier().equals("water-shuriken")) {
 			basePower = 20;
+	
 		}
 		
 		//HEX
@@ -395,27 +467,29 @@ public class APIService {
 		if (!condition.getWeather().equals("None") && m.getIdentifier().equals("weather-ball")) {
 			basePower = 100;
 			if (condition.getWeather().equals("Rain")) {
-				m.setType(this.getType("water"));
+				m.setAttackType(this.getType("water"));
 			}
 			else if (condition.getWeather().equals("Sun")) {
-				m.setType(this.getType("fire"));
+				m.setAttackType(this.getType("fire"));
 			}
-			if (condition.getWeather().equals("Sand")) {
-				m.setType(this.getType("rock"));
+			else if (condition.getWeather().equals("Sand")) {
+				m.setAttackType(this.getType("rock"));
 			}
-			if (condition.getWeather().equals("Hail")) {
-				m.setType(this.getType("ice"));
+			else if (condition.getWeather().equals("Hail")) {
+				m.setAttackType(this.getType("ice"));
 			}
+
 		}
+
 		
 		
 		//BOLT BEAK/FISHIOUS REND
 		if (m.getIdentifier().equals("fishious-rend") || m.getIdentifier().equals("bolt-beak")) {
 			if (defPokemon.equals(condition.getPokemon()) && this.calculateSpeed(defPokemon, condition.getOppBoost(), condition.getWeather(), condition.getTerrain(), condition.isFoeTw()) < this.calculateSpeed(atkPokemon, condition.getYourBoost(), condition.getWeather(), condition.getTerrain(), condition.isYourTw())) {
-				m.setPower(170);
+				basePower=170;
 			}
 			else if (atkPokemon.equals(condition.getPokemon()) && this.calculateSpeed(atkPokemon, condition.getOppBoost(), condition.getWeather(), condition.getTerrain(), condition.isFoeTw()) > this.calculateSpeed(defPokemon, condition.getYourBoost(), condition.getWeather(), condition.getTerrain(), condition.isYourTw())) {
-				m.setPower(170);
+				basePower=170;
 			}
 		}
 		
@@ -446,21 +520,21 @@ public class APIService {
 				multiplier = (multiplier*4915/4096);
 			}
 			if (atkPokemon.getAbility().getIdentifier().equals("refrigerate")) {
-				m.setType(this.getType("ice"));
+				m.setAttackType(this.getType("ice"));
 			}
 			else if (atkPokemon.getAbility().getIdentifier().equals("galvanize")) {
-				m.setType(this.getType("electric"));
+				m.setAttackType(this.getType("electric"));
 			}
 			else if (atkPokemon.getAbility().getIdentifier().equals("pixilate")) {
-				m.setType(this.getType("fairy"));
+				m.setAttackType(this.getType("fairy"));
 			}
 			else if (atkPokemon.getAbility().getIdentifier().equals("aerilate")) {
-				m.setType(this.getType("flying"));
+				m.setAttackType(this.getType("flying"));
 			}
 		}
 		else if (atkPokemon.getAbility().getIdentifier().equals("normalize")) {
 			multiplier = (multiplier*4915/4096);
-			m.setType(this.getType("normal"));
+			m.setAttackType(this.getType("normal"));
 		}
 		
 		//BATTERY
@@ -469,7 +543,7 @@ public class APIService {
 		}
 		
 		//SAND FORCE
-		if (condition.getWeather().equals("Sand") && atkPokemon.getAbility().getIdentifier().equals("sand-force") && (m.getType().getIdentifier().equals("rock") || m.getType().getIdentifier().equals("steel") || m.getType().getIdentifier().equals("ground"))) {
+		if (condition.getWeather().equals("Sand") && atkPokemon.getAbility().getIdentifier().equals("sand-force") && (m.getAttackType().getIdentifier().equals("rock") || m.getAttackType().getIdentifier().equals("steel") || m.getAttackType().getIdentifier().equals("ground"))) {
 			multiplier = (multiplier* 5325/4096);
 		}
 		
@@ -509,7 +583,7 @@ public class APIService {
 		}		
 		
 		//FAIRY/DARK AURA
-		if ((condition.isDarkAura() && m.getType().getIdentifier().equals("dark")) || (condition.isFairyAura() && m.getType().getIdentifier().equals("fairy"))) {
+		if ((condition.isDarkAura() && m.getAttackType().getIdentifier().equals("dark")) || (condition.isFairyAura() && m.getAttackType().getIdentifier().equals("fairy"))) {
 			multiplier = (multiplier*5448/4096);
 		}
 		
@@ -531,12 +605,12 @@ public class APIService {
 		}
 		
 		//DRAGON'S MAW
-		if (atkPokemon.getAbility().getIdentifier().equals("dragons-maw") && m.getType().getIdentifier().equals("dragon")) {
+		if (atkPokemon.getAbility().getIdentifier().equals("dragons-maw") && m.getAttackType().getIdentifier().equals("dragon")) {
 			multiplier = (multiplier*6144/4096);
 		}
 		
 		//TRANSISTOR
-		if (atkPokemon.getAbility().getIdentifier().equals("transistor") && m.getType().getIdentifier().equals("electric")) {
+		if (atkPokemon.getAbility().getIdentifier().equals("transistor") && m.getAttackType().getIdentifier().equals("electric")) {
 			multiplier = (multiplier*6144/4096);
 		}
 		
@@ -556,12 +630,12 @@ public class APIService {
 		}
 		
 		//HEATPROOF
-		if (defPokemon.getAbility().getIdentifier().equals("heatproof") && m.getType().getIdentifier().equals("fire")) {
+		if (defPokemon.getAbility().getIdentifier().equals("heatproof") && m.getAttackType().getIdentifier().equals("fire") && !this.ignoresAbilities(atkPokemon)) {
 			multiplier = (multiplier*2048/4096);
 		}
 		
 		//DRY SKIN
-		if (defPokemon.getAbility().getIdentifier().equals("dry-skin") && m.getType().getIdentifier().equals("fire")) {
+		if (defPokemon.getAbility().getIdentifier().equals("dry-skin") && m.getAttackType().getIdentifier().equals("fire")) {
 			multiplier = (multiplier*5120/4096);
 		}
 
@@ -572,136 +646,157 @@ public class APIService {
 		
 		
 		//TYPE BOOSTING ITEM
-		if (m.getType().getIdentifier().equals("ground") && (atkPokemon.getItem().equals("soft-sand") || atkPokemon.getItem().equals("earth-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("normal") && (atkPokemon.getItem().equals("silk-scarf") || atkPokemon.getItem().equals("polkadot-bow") || atkPokemon.getItem().equals("pink-bow"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("fire") && (atkPokemon.getItem().equals("charcoal") || atkPokemon.getItem().equals("flame-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("fighting") && (atkPokemon.getItem().equals("black-belt") || atkPokemon.getItem().equals("fist-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("ice") && (atkPokemon.getItem().equals("never-melt-ice") || atkPokemon.getItem().equals("icicle-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("dragon") && (atkPokemon.getItem().equals("dragon-fang") || atkPokemon.getItem().equals("draco-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("ghost") && (atkPokemon.getItem().equals("spell-tag") || atkPokemon.getItem().equals("spooky-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("bug") && (atkPokemon.getItem().equals("silver-powder") || atkPokemon.getItem().equals("insect-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("grass") && (atkPokemon.getItem().equals("miracle-seed") || atkPokemon.getItem().equals("meadow-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("steel") && (atkPokemon.getItem().equals("metal-coat") || atkPokemon.getItem().equals("iron-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("psychic") && (atkPokemon.getItem().equals("twisted-spoon") || atkPokemon.getItem().equals("mind-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("flying") && (atkPokemon.getItem().equals("sharp-beak") || atkPokemon.getItem().equals("sky-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("water") && (atkPokemon.getItem().equals("mystic-water") || atkPokemon.getItem().equals("splash-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("poison") && (atkPokemon.getItem().equals("poison-barb") || atkPokemon.getItem().equals("toxic-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("rock") && (atkPokemon.getItem().equals("hard-stone") || atkPokemon.getItem().equals("stone-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("electric") && (atkPokemon.getItem().equals("magnet") || atkPokemon.getItem().equals("zap-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("fairy") && (atkPokemon.getItem().equals("pixie-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (m.getType().getIdentifier().equals("dark") && (atkPokemon.getItem().equals("black-glasses") || atkPokemon.getItem().equals("dread-plate"))){
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (atkPokemon.getIdentifier().equals("dialga") && (m.getType().getIdentifier().equals("steel") && m.getType().getIdentifier().equals("dragon")) && atkPokemon.getItem().equals("adamant-orb")) {
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (atkPokemon.getIdentifier().equals("palkia") && (m.getType().getIdentifier().equals("water") && m.getType().getIdentifier().equals("dragon")) && atkPokemon.getItem().equals("lustrous-orb")) {
-			multiplier = (multiplier*4915/4096);
-		}
-		else if (atkPokemon.getIdentifier().contains("giratina") && (m.getType().getIdentifier().equals("ghost") && m.getType().getIdentifier().equals("dragon")) && atkPokemon.getItem().equals("griseous-orb")) {
-			multiplier = (multiplier*4915/4096);
-		}
-		else if ((atkPokemon.getIdentifier().equals("latios") || atkPokemon.getIdentifier().equals("latias")) && (m.getType().getIdentifier().equals("psychic") && m.getType().getIdentifier().equals("dragon")) && atkPokemon.getItem().equals("soul-dew")) {
-			multiplier = (multiplier*4915/4096);
-		}
-		
-		//GEMS
-		else if (condition.getGeneration() == 5) {
-			if (m.getType().getIdentifier().equals("dragon") && atkPokemon.getItem().equals("dragon-gem")){
-				multiplier = (multiplier*6144/4096);
+		if (!condition.isItemConsumed()) {
+			if (m.getAttackType().getIdentifier().equals("ground") && (atkPokemon.getItem().equals("soft-sand") || atkPokemon.getItem().equals("earth-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("ground") && atkPokemon.getItem().equals("ground-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("normal") && (atkPokemon.getItem().equals("silk-scarf") || atkPokemon.getItem().equals("polkadot-bow") || atkPokemon.getItem().equals("pink-bow"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("fire") && atkPokemon.getItem().equals("fire-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("fire") && (atkPokemon.getItem().equals("charcoal") || atkPokemon.getItem().equals("flame-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("water") && atkPokemon.getItem().equals("water-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("fighting") && (atkPokemon.getItem().equals("black-belt") || atkPokemon.getItem().equals("fist-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("electric") && atkPokemon.getItem().equals("electric-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("ice") && (atkPokemon.getItem().equals("never-melt-ice") || atkPokemon.getItem().equals("icicle-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("grass") && atkPokemon.getItem().equals("grass-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("dragon") && (atkPokemon.getItem().equals("dragon-fang") || atkPokemon.getItem().equals("draco-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("ice") && atkPokemon.getItem().equals("ice-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("ghost") && (atkPokemon.getItem().equals("spell-tag") || atkPokemon.getItem().equals("spooky-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("poison") && atkPokemon.getItem().equals("poison-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("bug") && (atkPokemon.getItem().equals("silver-powder") || atkPokemon.getItem().equals("insect-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("normal") && atkPokemon.getItem().equals("normal-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("grass") && (atkPokemon.getItem().equals("miracle-seed") || atkPokemon.getItem().equals("meadow-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("flying") && atkPokemon.getItem().equals("flying-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("steel") && (atkPokemon.getItem().equals("metal-coat") || atkPokemon.getItem().equals("iron-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("psychic") && atkPokemon.getItem().equals("psychic-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("psychic") && (atkPokemon.getItem().equals("twisted-spoon") || atkPokemon.getItem().equals("mind-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("bug") && atkPokemon.getItem().equals("bug-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("flying") && (atkPokemon.getItem().equals("sharp-beak") || atkPokemon.getItem().equals("sky-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("rock") && atkPokemon.getItem().equals("rock-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("water") && (atkPokemon.getItem().equals("mystic-water") || atkPokemon.getItem().equals("splash-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("ghost") && atkPokemon.getItem().equals("ghost-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("poison") && (atkPokemon.getItem().equals("poison-barb") || atkPokemon.getItem().equals("toxic-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("dark") && atkPokemon.getItem().equals("dark-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("rock") && (atkPokemon.getItem().equals("hard-stone") || atkPokemon.getItem().equals("stone-plate"))){
+				multiplier = (multiplier*4915/4096);
 			}
-			else if (m.getType().getIdentifier().equals("steel") && atkPokemon.getItem().equals("steel-gem")){
-				multiplier = (multiplier*6144/4096);
+			else if (m.getAttackType().getIdentifier().equals("electric") && (atkPokemon.getItem().equals("magnet") || atkPokemon.getItem().equals("zap-plate"))){
+				multiplier = (multiplier*4915/4096);
+			}
+			else if (m.getAttackType().getIdentifier().equals("fairy") && (atkPokemon.getItem().equals("pixie-plate"))){
+				multiplier = (multiplier*4915/4096);
+			}
+			else if (m.getAttackType().getIdentifier().equals("dark") && (atkPokemon.getItem().equals("black-glasses") || atkPokemon.getItem().equals("dread-plate"))){
+				multiplier = (multiplier*4915/4096);
+			}
+			else if (atkPokemon.getIdentifier().equals("dialga") && (m.getAttackType().getIdentifier().equals("steel") && m.getAttackType().getIdentifier().equals("dragon")) && atkPokemon.getItem().equals("adamant-orb")) {
+				multiplier = (multiplier*4915/4096);
+			}
+			else if (atkPokemon.getIdentifier().equals("palkia") && (m.getAttackType().getIdentifier().equals("water") && m.getAttackType().getIdentifier().equals("dragon")) && atkPokemon.getItem().equals("lustrous-orb")) {
+				multiplier = (multiplier*4915/4096);
+			}
+			else if (atkPokemon.getIdentifier().contains("giratina") && (m.getAttackType().getIdentifier().equals("ghost") && m.getAttackType().getIdentifier().equals("dragon")) && atkPokemon.getItem().equals("griseous-orb")) {
+				multiplier = (multiplier*4915/4096);
+			}
+			else if ((atkPokemon.getIdentifier().equals("latios") || atkPokemon.getIdentifier().equals("latias")) && (m.getAttackType().getIdentifier().equals("psychic") && m.getAttackType().getIdentifier().equals("dragon")) && atkPokemon.getItem().equals("soul-dew")) {
+				multiplier = (multiplier*4915/4096);
+			}
+			
+			//GEMS
+			else if (condition.getGeneration() == 5) {
+				if (m.getAttackType().getIdentifier().equals("dragon") && atkPokemon.getItem().equals("dragon-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("ground") && atkPokemon.getItem().equals("ground-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("fire") && atkPokemon.getItem().equals("fire-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("water") && atkPokemon.getItem().equals("water-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("electric") && atkPokemon.getItem().equals("electric-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("grass") && atkPokemon.getItem().equals("grass-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("ice") && atkPokemon.getItem().equals("ice-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("poison") && atkPokemon.getItem().equals("poison-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("normal") && atkPokemon.getItem().equals("normal-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("flying") && atkPokemon.getItem().equals("flying-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("psychic") && atkPokemon.getItem().equals("psychic-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("bug") && atkPokemon.getItem().equals("bug-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("rock") && atkPokemon.getItem().equals("rock-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("ghost") && atkPokemon.getItem().equals("ghost-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("dark") && atkPokemon.getItem().equals("dark-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+				else if (m.getAttackType().getIdentifier().equals("steel") && atkPokemon.getItem().equals("steel-gem")){
+					multiplier = (multiplier*6144/4096);
+					condition.setItemConsumed(true);
+				}
+			}
+			else if (m.getAttackType().getIdentifier().equals("normal") && atkPokemon.getItem().equals("normal-gem")){
+				multiplier = (multiplier*5325/4096);
+				condition.setItemConsumed(true);
 			}
 		}
-		else if (m.getType().getIdentifier().equals("normal") && atkPokemon.getItem().equals("normal-gem")){
-			multiplier = (multiplier*5325/4096);
-		}
-		
 		//SOLAR BEAM/BLADE
 		if ((m.getIdentifier().equals("solar-blade") || m.getIdentifier().equals("solar-beam")) && (condition.getWeather().equals("Rain") || condition.getWeather().equals("Sand") || condition.getWeather().equals("Hail") || condition.getWeather().equals("Heavy Rain"))){
 			multiplier = (multiplier*2048/4096);
 		}
 		
 		//KNOCK OFF
-		if (m.getIdentifier().equals("knock-off") && (defPokemon.getItem() != null && defPokemon.getItem().contains("-z"))){
-			multiplier = (multiplier*6144/4096);
+		if (m.getIdentifier().equals("knock-off") && (!condition.isItemConsumed() && defPokemon.getItem() != null && this.canKnockOffItem(defPokemon.getItem()))){
+			if (!((defPokemon.getIdentifier().contains("arceus") || defPokemon.getIdentifier().contains("silvally")) && !defPokemon.isType("normal"))) {
+				multiplier = (multiplier*6144/4096);
+				condition.setItemConsumed(true);
+			}
 		}
 		
 		//HELPING HAND
@@ -710,7 +805,7 @@ public class APIService {
 		}
 
 		//CHARGE
-		if (condition.isCharge() && m.getType().getIdentifier().equals("electric")) {
+		if (condition.isCharge() && m.getAttackType().getIdentifier().equals("electric")) {
 			multiplier = (multiplier*8192/4096);
 		}
 		
@@ -740,20 +835,20 @@ public class APIService {
 			if (!condition.getTerrain().equals("None")) {
 				multiplier = (multiplier*8192/4096);
 				if (condition.getTerrain().equals("Grassy")) {
-					m.setType(this.getType("grass"));
+					m.setAttackType(this.getType("grass"));
 				}
 				else if (condition.getTerrain().equals("Misty")) {
-					m.setType(this.getType("fairy"));
+					m.setAttackType(this.getType("fairy"));
 				}
 				else if (condition.getTerrain().equals("Electric")) {
-					m.setType(this.getType("electric"));
+					m.setAttackType(this.getType("electric"));
 				}
 				else if (condition.getTerrain().equals("psychic")) {
-					m.setType(this.getType("psychic"));
+					m.setAttackType(this.getType("psychic"));
 				}
 			}
 		}
-		if (m.getType().getIdentifier().equals("grass") && condition.getTerrain().equals("Grassy")) {
+		if (m.getAttackType().getIdentifier().equals("grass") && condition.getTerrain().equals("Grassy") && !this.isPokemonFlying(atkPokemon, condition)) {
 			if (condition.getGeneration() < 8) {
 				multiplier = (multiplier*6144/4096);
 			}
@@ -761,7 +856,7 @@ public class APIService {
 				multiplier = (multiplier*5325/4096);
 			}
 		}
-		else if (m.getType().getIdentifier().equals("electric") && condition.getTerrain().equals("Electric")) {
+		else if (m.getAttackType().getIdentifier().equals("electric") && condition.getTerrain().equals("Electric") && !this.isPokemonFlying(atkPokemon, condition)) {
 			if (condition.getGeneration() < 8) {
 				multiplier = (multiplier*6144/4096);
 			}
@@ -769,12 +864,12 @@ public class APIService {
 				multiplier = (multiplier*5325/4096);
 			}
 			if (m.getIdentifier().equals("rising-voltage")) {
-				if (condition.isGravity() || !(defPokemon.isType("flying") && defPokemon.getAbility().equals("levitate") && defPokemon.getItem().equals("air-balloon"))){
+				if (!this.isPokemonFlying(defPokemon, condition)){
 					multiplier = (multiplier*8192/4096);
 				}
 			}
 		}
-		else if (m.getType().getIdentifier().equals("psychic") && condition.getTerrain().equals("Psychic")) {
+		else if (m.getAttackType().getIdentifier().equals("psychic") && condition.getTerrain().equals("Psychic") && this.isPokemonFlying(atkPokemon, condition)) {
 			if (condition.getGeneration() < 8) {
 				multiplier = (multiplier*6144/4096);
 			}
@@ -782,16 +877,30 @@ public class APIService {
 				multiplier = (multiplier*5325/4096);
 			}
 			if (m.getIdentifier().equals("expanding-force")) {
-				multiplier = (multiplier*8192/4096);
-				m.setTarget(this.getMoveTarget("all-opponents"));
+				multiplier = (multiplier*6144/4096);
 			}
 		}
 		else if ((m.getIdentifier().equals("earthquake") || m.getIdentifier().equals("magnitude") || m.getIdentifier().equals("bulldoze") ) && condition.getTerrain().equals("Grassy")) {
 			multiplier = (multiplier*2048/4096);
 		}
-		else if (condition.getTerrain().equals("Misty") && m.getType().getIdentifier().equals("dragon") && (condition.isGravity() || defPokemon.getItem().equals("iron-ball") || !(defPokemon.isType("flying") || defPokemon.getAbility().getIdentifier().equals("levitate") || defPokemon.getItem().equals("air-balloon")))){
+		else if (condition.getTerrain().equals("Misty") && m.getAttackType().getIdentifier().equals("dragon") && this.isPokemonFlying(defPokemon, condition)){
 			multiplier = (multiplier*2048/4096);
 		}
+		if (attackerDMax) {
+			if (m.getAttackType().getIdentifier().equals("fairy")) {
+				condition.setTerrain("Misty");
+			}
+			else if (m.getAttackType().getIdentifier().equals("grass")) {
+				condition.setTerrain("Grassy");
+			}
+			if (m.getAttackType().getIdentifier().equals("electric")) {
+				condition.setTerrain("Electric");
+			}
+			if (m.getAttackType().getIdentifier().equals("psychic")) {
+				condition.setTerrain("Psychic");
+			}
+		}
+		
 		//-----------------------------------------------------------
 		//------------------TODO: MUD/WATER SPORTS-------------------
 		//-----------------------------------------------------------
@@ -826,10 +935,10 @@ public class APIService {
 				defense = defPokemon.getDef();
 			}
 		}
-		
+	
 		double atkBoost = 1.0;
 		//UNAWARE, CRITS AND BOOSTS
-		if (!defPokemon.getAbility().getIdentifier().equals("unaware")) {
+		if (!defPokemon.getAbility().getIdentifier().equals("unaware") || (defPokemon.getAbility().getIdentifier().equals("unaware") && this.ignoresAbilities(atkPokemon))) {
 			if (condition.isCritical()) {
 				if (atkPokemon.equals(condition.getPokemon()) || (defPokemon.equals(condition.getPokemon()) && m.getIdentifier().equals("foul-play"))) {
 					attack = (int) Math.floor(attack *Math.max(1, condition.getOppBoost()));
@@ -847,6 +956,28 @@ public class APIService {
 				}
 			}
 		}
+		
+		//HANDLE DROPS HERE
+		int change = 0;
+		if (m.getEffectId() == 205) {
+			change = -2;
+		}
+		else if (m.getEffectId() == 183) {
+			change = -1;
+		}
+		
+		if (atkPokemon.getAbility().getIdentifier().equals("contrary")) {
+			change *= -1;
+		}
+		if (!(atkPokemon.getItem().equals("white-herb") && change < 0)) {
+			if (atkPokemon.equals(condition.getPokemon())) {
+				condition.changeOppBoost(change);
+			}
+			else {
+				condition.changeYourBoost(change);
+			}
+		}
+
 		
 		//HUSTLE
 		if (atkPokemon.getAbility().getIdentifier().equals("hustle")) {
@@ -875,12 +1006,12 @@ public class APIService {
 		}
 		
 		//OVERGROW/BLAZE/TORRENT/SWARM
-		if (condition.getHealth() < 33.33 && ((atkPokemon.getAbility().getIdentifier().equals("overgrow") && m.getType().getIdentifier().equals("grass")) || (atkPokemon.getAbility().getIdentifier().equals("blaze") && m.getType().getIdentifier().equals("fire")) || (atkPokemon.getAbility().getIdentifier().equals("torrent") && m.getType().getIdentifier().equals("water")) || (atkPokemon.getAbility().getIdentifier().equals("swarm") && m.getType().getIdentifier().equals("bug")))) {
+		if (condition.getHealth() < 33.33 && ((atkPokemon.getAbility().getIdentifier().equals("overgrow") && m.getAttackType().getIdentifier().equals("grass")) || (atkPokemon.getAbility().getIdentifier().equals("blaze") && m.getAttackType().getIdentifier().equals("fire")) || (atkPokemon.getAbility().getIdentifier().equals("torrent") && m.getAttackType().getIdentifier().equals("water")) || (atkPokemon.getAbility().getIdentifier().equals("swarm") && m.getAttackType().getIdentifier().equals("bug")))) {
 			attackMultiplier = (attackMultiplier*6144/4096);
 		}
 		
 		//FLASH-FIRE
-		if (condition.isFlashFire() && m.getType().getIdentifier().equals("fire")) {
+		if (condition.isFlashFire() && m.getAttackType().getIdentifier().equals("fire")) {
 			attackMultiplier = (attackMultiplier*6144/4096);
 		}
 		
@@ -895,7 +1026,7 @@ public class APIService {
 
 		
 		//STEELWORKER
-		if (atkPokemon.getAbility().getIdentifier().equals("steelworker") && m.getType().getIdentifier().equals("steel")) {
+		if (atkPokemon.getAbility().getIdentifier().equals("steelworker") && m.getAttackType().getIdentifier().equals("steel")) {
 			attackMultiplier = (attackMultiplier*6144/4096);
 		}
 		
@@ -905,7 +1036,7 @@ public class APIService {
 		}
 		
 		//WATER BUBBLE
-		if (atkPokemon.getAbility().getIdentifier().equals("water-bubble") && m.getType().getIdentifier().equals("water")) {
+		if (atkPokemon.getAbility().getIdentifier().equals("water-bubble") && m.getAttackType().getIdentifier().equals("water")) {
 			attackMultiplier = (attackMultiplier*8192/4096);
 		}
 		
@@ -914,12 +1045,12 @@ public class APIService {
 		//----------------------------------------------------------------------
 
 		//THICK FAT
-		if (defPokemon.getAbility().getIdentifier().equals("thick-fat") && (m.getType().getIdentifier().equals("ice") || m.getType().getIdentifier().equals("fire"))){
+		if (defPokemon.getAbility().getIdentifier().equals("thick-fat") && (m.getAttackType().getIdentifier().equals("ice") || m.getAttackType().getIdentifier().equals("fire")) && !this.ignoresAbilities(atkPokemon)){
 			attackMultiplier = (attackMultiplier*2048/4096);
 		}
 		
 		//WATER BUBBLE
-		if (defPokemon.getAbility().getIdentifier().equals("water-bubble") && m.getType().getIdentifier().equals("fire")){
+		if (defPokemon.getAbility().getIdentifier().equals("water-bubble") && m.getAttackType().getIdentifier().equals("fire") && !this.ignoresAbilities(atkPokemon)){
 			attackMultiplier = (attackMultiplier*2048/4096);
 		}
 		
@@ -979,17 +1110,17 @@ public class APIService {
 		}
 		
 		//GRASS PELT
-		if (condition.getTerrain().equals("Grassy") && defPokemon.getAbility().getIdentifier().equals("grass-pelt") && isMovePhysical(condition.getMove())) {
+		if (condition.getTerrain().equals("Grassy") && defPokemon.getAbility().getIdentifier().equals("grass-pelt") && isMovePhysical(condition.getMove()) && !this.ignoresAbilities(atkPokemon)) {
 			defenseMultiplier = defenseMultiplier * 6144/4096;
 		}
 		
 		//MARVEL SCALE
-		if (defPokemon.getAbility().getIdentifier().equals("marvel-scale") && isMovePhysical(condition.getMove())) {
+		if (defPokemon.getAbility().getIdentifier().equals("marvel-scale") && isMovePhysical(condition.getMove()) && (!defPokemon.getStatus().equals("Healthy")) && !this.ignoresAbilities(atkPokemon)) {
 			defenseMultiplier = defenseMultiplier * 6144/4096;
 		}
 		
 		//FUR COAT
-		if (defPokemon.getAbility().getIdentifier().equals("fur-coat") && isMovePhysical(condition.getMove())) {
+		if (defPokemon.getAbility().getIdentifier().equals("fur-coat") && isMovePhysical(condition.getMove()) && !this.ignoresAbilities(atkPokemon)) {
 			defenseMultiplier = defenseMultiplier * 8192/4096;
 		}
 		
@@ -1024,14 +1155,71 @@ public class APIService {
 		//-------------------------END DEFENSE MULTIPLIER--------------------
 		//-------------------------------------------------------------------
 		
+		if (attackerDMax && m.getAttackType().getIdentifier().equals("rock")) {
+			condition.setWeather("Sand");
+		}
+		
 		int level1 = (int) Math.floor(2*atkPokemon.getLevel()/5+2);
 		int level2 = (int) Math.floor(level1*basePower*attack/defense);
-		//System.out.println(level1+" BP: "+basePower+" DEFMULT: "+defenseMultiplier);
+		System.out.println(level1+" BP: "+basePower+" DEFMULT: "+defenseMultiplier+" Level 2: "+level2 + " Def: "+defense + "Atk: "+attack);
 
 		int level3 = (int) Math.floor(level2/50);
 		//System.out.println(level3+2);
 
 		return level3+2;
+	}
+	
+	
+	public int checkBerryUsage(Pokemon defPokemon, Condition c, int health) {
+		if (!c.isItemConsumed() && health > 0) {
+			if (defPokemon.getItem().equals("sitrus-berry")) {
+				if (health/defPokemon.getHP() <= 0.5) {
+					if (defPokemon.getAbility().getIdentifier().equals("ripen")) {
+						health += Math.max(1, Math.floor(defPokemon.getHP()/2));
+					}
+					else {
+						health += Math.max(1, Math.floor(defPokemon.getHP()/4));
+						if (defPokemon.getAbility().getIdentifier().equals("cheek-pouch")) {
+							health += Math.max(1, Math.floor(defPokemon.getHP()/3));
+						}
+					}
+					c.setItemConsumed(true);
+				}
+			}
+			else if (defPokemon.getItem().equals("wiki-berry") || defPokemon.getItem().equals("aguav-berry") || defPokemon.getItem().equals("iapapa-berry") || defPokemon.getItem().equals("mago-berry") || defPokemon.getItem().equals("figy-berry")) {
+				if (c.getGeneration() == 8) {
+					if (health/defPokemon.getHP() <= 0.25 || (health/defPokemon.getHP() <= 0.5 && defPokemon.getAbility().getIdentifier().equals("gluttony"))) {
+						health += Math.max(1, Math.floor(defPokemon.getHP()/3));
+						if (defPokemon.getAbility().getIdentifier().equals("cheek-pouch")) {
+							health += Math.max(1, Math.floor(defPokemon.getHP()/3));
+						}
+						else if (defPokemon.getAbility().getIdentifier().equals("ripen")) {
+							health += Math.max(1, Math.floor(defPokemon.getHP()/3*2));
+						}
+						c.setItemConsumed(true);
+					}
+				}
+				else if (c.getGeneration() == 7) {
+					if (health/defPokemon.getHP() <= 0.25 || (health/defPokemon.getHP() <= 0.5 && defPokemon.getAbility().getIdentifier().equals("gluttony"))) {
+						health += Math.max(1, Math.floor(defPokemon.getHP()/2));
+						if (defPokemon.getAbility().getIdentifier().equals("cheek-pouch")) {
+							health += Math.max(1, Math.floor(defPokemon.getHP()/3));
+						}
+						c.setItemConsumed(true);
+					}
+				}
+				else if (c.getGeneration() <= 6) {
+					if (health/defPokemon.getHP() <= 0.5) {
+						health += Math.max(1, Math.floor(defPokemon.getHP()/8));
+						if (defPokemon.getAbility().getIdentifier().equals("cheek-pouch")) {
+							health += Math.max(1, Math.floor(defPokemon.getHP()/3));
+						}
+						c.setItemConsumed(true);
+					}
+				}
+			}
+		}
+		return health;
 	}
 	
 	public String getMaxName(Type t) {
@@ -1073,13 +1261,16 @@ public class APIService {
 			defPokemon = condition.getPokemon();
 			atkPokemon = pokemon;
 		}
+		boolean attackerDMax = ((condition.isOppDmax() && condition.getPokemon().equals(atkPokemon)) || (condition.isSelfDmax() && condition.getPokemon().equals(defPokemon)));
+		boolean defenderDMax = ((condition.isSelfDmax() && condition.getPokemon().equals(atkPokemon)) || (condition.isOppDmax() && condition.getPokemon().equals(defPokemon)));
+
 
 		int damage = calculateBaseDamage(condition, atkPokemon, defPokemon);
-		//System.out.println(damage);
+		System.out.println(damage);
 		
 		//General modifiers
 		
-		if (condition.isDoubles() && !(m.getTarget().getIdentifier().equals("selected-pokemon"))) {
+		if (condition.isDoubles() && (!(m.getTarget().getIdentifier().equals("selected-pokemon")) || (m.getIdentifier().equals("expanding-force") && condition.getTerrain().equals("Psychic")) )) {
 			damage = pokeRound(damage*3072.0/4096);
 		}
 		
@@ -1087,7 +1278,6 @@ public class APIService {
 		//TODO: parental bond
 		//----------------------------------------------------------------------
 
-		
 		if (condition.getWeather().equals("Sun")) {
 			if (m.isType("fire")) {
 				damage = pokeRound(damage*6144.0/4096);
@@ -1104,9 +1294,10 @@ public class APIService {
 				damage = pokeRound(damage*2048.0/4096);
 			}
 		}
+
 		
-	
-		if (condition.isCritical() && !(defPokemon.getAbility().getIdentifier().equals("battle-armor") || defPokemon.getAbility().getIdentifier().equals("shell-armor"))){
+		//BATTLE ARMOR/SHELL ARMOR
+		if (condition.isCritical() && !(defPokemon.getAbility().getIdentifier().equals("battle-armor") || defPokemon.getAbility().getIdentifier().equals("shell-armor")) && !this.ignoresAbilities(atkPokemon)){
 			if (condition.getGeneration() >= 6) {
 				damage = pokeRound(damage*6144.0/4096);
 			}
@@ -1115,13 +1306,14 @@ public class APIService {
 			}
 		}
 		
+		//RANDOM FACTOR.
 		if (condition.getCond().equals("Knock Out") || condition.getCond().equals("2HKO")) {
 			damage = (int) Math.floor(damage*0.85);
 		}
 		
 		
 		//STAB
-		if (atkPokemon.isType(m.getType().getIdentifier())) {
+		if (atkPokemon.isType(m.getAttackType().getIdentifier())) {
 			if (atkPokemon.getAbility().getIdentifier().equals("adaptability")) {
 				damage = pokeRound(damage * 8192 / 4096.0);
 			}
@@ -1130,14 +1322,44 @@ public class APIService {
 			}
 		}
 		
-		double modifier = defPokemon.getEffectivenessFrom(m.getType());
-
+		double modifier = defPokemon.getEffectivenessFrom(m.getAttackType());
+		
+		if (condition.getGeneration() <= 5 && (defPokemon.isType("steel") && (m.getAttackType().getIdentifier().equals("ghost") || m.getAttackType().getIdentifier().equals("dark")))) {
+			modifier /= 2.0;
+		}
+		
+		//FREEZE DRY
 		if (m.getIdentifier().equals("freeze-dry") && defPokemon.isType("water")) {
 			modifier = modifier * 4;
 		}
+		
+		
+		//FLYING TYPES, SMACK DOWN/GRAVITY/LEVITATE
+		if ((condition.isGravity() || condition.isSmackDown()) && (defPokemon.isType("flying") || (defPokemon.getAbility().getIdentifier().equals("levitate") && !this.ignoresAbilities(atkPokemon)))&& m.getAttackType().getIdentifier().equals("ground")) {
+			modifier = 1;
+			for (Type t: defPokemon.getTypes()) {
+				if (!t.isTypeName("flying")) {
+					modifier *= t.getEffectivenessFrom(m.getAttackType())/100.0;
+				}
+			}
+		}
+		
+		//THOUSAND ARROWS
 		else if ((m.getIdentifier().equals("thousand-arrows") || defPokemon.getItem().equals("iron-ball")) && defPokemon.isType("flying")) {
 			modifier = 1.0;
+			if (m.getIdentifier().equals("thousand-arrows")) {
+
+				condition.setSmackDown(true);
+			}
 		}
+		
+		//LEVITATE
+		else if (defPokemon.getAbility().getIdentifier().equals("levitate") && m.getAttackType().getIdentifier().equals("ground") && !m.getIdentifier().equals("thousand-arrows") && !this.ignoresAbilities(atkPokemon)) {
+			modifier = 0;
+		}
+		
+		
+		
 		if (modifier > 1.1) {
 			damage = damage << 1;
 			if (modifier > 3) {
@@ -1157,7 +1379,7 @@ public class APIService {
 
 		
 		
-		double finalModifier = 4096/4096;
+		double finalModifier = 4096;
 		
 		if (condition.isScreens()) {
 			if(condition.isDoubles()) {
@@ -1167,18 +1389,25 @@ public class APIService {
 				finalModifier = finalModifier*2048/4096;
 			}
 		}
+		
+		//NEUROFORCE
 		if(atkPokemon.getAbility().getIdentifier().equals("neuroforce") && modifier > 1.1) {
 			finalModifier = finalModifier*5120/4096;
 		}
+		
+		//SNIPER
 		if(atkPokemon.getAbility().getIdentifier().equals("sniper") && condition.isCritical()) {
 			finalModifier = finalModifier*6144/4096;
 
 		}
+		
+		//TINTED LENS
 		if(atkPokemon.getAbility().getIdentifier().equals("tinted-lens") && modifier < 0.9) {
 			finalModifier = finalModifier*8192/4096;
 		}
 		
-		if ((defPokemon.getAbility().getIdentifier().equals("multiscale") || defPokemon.getAbility().getIdentifier().equals("shadow-shield")) && (int) (condition.getHealth())==100) {
+		//MULTISCALE
+		if ((defPokemon.getAbility().getIdentifier().equals("multiscale") || defPokemon.getAbility().getIdentifier().equals("shadow-shield")) && (int) (condition.getHealth())==100 && !this.ignoresAbilities(atkPokemon)) {
 			finalModifier = finalModifier * 2048/4096;
 		}
 		
@@ -1188,29 +1417,38 @@ public class APIService {
 			}
 		}
 		
-		//----------------------------------------------------------------------
-		//TODO: Fluffy (Contact)
-		//----------------------------------------------------------------------
+		//FLUFFY (CONTACT)
+		if (this.affectedByToughClaws(m) && defPokemon.getAbility().getIdentifier().equals("fluffy") && !this.ignoresAbilities(atkPokemon)) {
+			finalModifier = finalModifier * 2048/4096;
+		}
 
 		
+		//FRIEND GUARD
 		if (condition.isFriendGuard()) {
 			finalModifier = finalModifier*3072/4096;
 		}
 		
-		if((defPokemon.getAbility().getIdentifier().equals("solid-rock") || defPokemon.getAbility().getIdentifier().equals("filter") || defPokemon.getAbility().getIdentifier().equals("prism-armor")) && modifier > 1.1) {
+		
+		//SOLID ROCK
+		if((defPokemon.getAbility().getIdentifier().equals("solid-rock") || defPokemon.getAbility().getIdentifier().equals("filter") || defPokemon.getAbility().getIdentifier().equals("prism-armor")) && modifier > 1.1 && !this.ignoresAbilities(atkPokemon)) {
 			finalModifier = finalModifier * 3072/4096;
 		}
 		
 		//TODO: Metronome item
 		
-		if (defPokemon.getAbility().getIdentifier().equals("fluffy") && m.getType().getIdentifier().equals("fire")) {
+		//FLUFFY FIRE
+		if (defPokemon.getAbility().getIdentifier().equals("fluffy") && m.getAttackType().getIdentifier().equals("fire") && !this.ignoresAbilities(atkPokemon)) {
 			finalModifier = finalModifier * 8192/4096;
 		}
 		
+		
+		//EXPERT BELT
 		if(atkPokemon.getItem().equals("expert-belt") && modifier > 1.1) {
 			finalModifier = finalModifier * 4915 / 4096;
 		}
 		
+		
+		//LIFE ORB
 		if (atkPokemon.getItem().equals("life-orb")) {
 			finalModifier = finalModifier * 5324/4096;
 		}
@@ -1218,64 +1456,123 @@ public class APIService {
 		
 		
 		//resist berries
-		if (m.getType().getIdentifier().equals("fighting") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("chople-berry")) {
+		if (m.getAttackType().getIdentifier().equals("fighting") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("chople-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("ice") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("yache-berry")) {
+		if (m.getAttackType().getIdentifier().equals("ice") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("yache-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("fire") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("occa-berry")) {
+		if (m.getAttackType().getIdentifier().equals("fire") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("occa-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("grass") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("rindo-berry")) {
+		if (m.getAttackType().getIdentifier().equals("grass") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("rindo-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("electric") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("wacan-berry")) {
+		if (m.getAttackType().getIdentifier().equals("electric") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("wacan-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("water") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("passho-berry")) {
+		if (m.getAttackType().getIdentifier().equals("water") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("passho-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("steel") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("babiri-berry")) {
+		if (m.getAttackType().getIdentifier().equals("steel") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("babiri-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("poison") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("kebia-berry")) {
+		if (m.getAttackType().getIdentifier().equals("poison") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("kebia-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("ground") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("shuca-berry")) {
+		if (m.getAttackType().getIdentifier().equals("ground") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("shuca-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("flying") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("coba-berry")) {
+		if (m.getAttackType().getIdentifier().equals("flying") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("coba-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("psychic") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("payapa-berry")) {
+		if (m.getAttackType().getIdentifier().equals("psychic") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("payapa-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("bug") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("tanga-berry")) {
+		if (m.getAttackType().getIdentifier().equals("bug") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("tanga-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("rock") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("charti-berry")) {
+		if (m.getAttackType().getIdentifier().equals("rock") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("charti-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("ghost") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("kasib-berry")) {
+		if (m.getAttackType().getIdentifier().equals("ghost") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("kasib-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("dragon") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("haban-berry")) {
+		if (m.getAttackType().getIdentifier().equals("dragon") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("haban-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("dark") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("colbur-berry")) {
+		if (m.getAttackType().getIdentifier().equals("dark") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("colbur-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
-		if (m.getType().getIdentifier().equals("normal") && defPokemon.getEffectivenessFrom(m.getType()) > 1.1 && defPokemon.getItem().equals("chilan-berry")) {
+		if (m.getAttackType().getIdentifier().equals("normal") && defPokemon.getEffectivenessFrom(m.getAttackType()) > 1.1 && defPokemon.getItem().equals("chilan-berry")) {
 			finalModifier = finalModifier * 2048/4096;
+			condition.setItemConsumed(true);
 		}
 		
 		//----------------------------------------------------------------------
 		//TODO: double-damage situations, like Dig, Minimize and Dive
 		//----------------------------------------------------------------------
-
 		
-		return damage;
+		if (attackerDMax && condition.getMove().getAttackType().getIdentifier().equals("fire")) {
+			condition.setWeather("Sun");
+		}
+		else if (attackerDMax && condition.getMove().getAttackType().getIdentifier().equals("water")) {
+			condition.setWeather("Rain");
+		}
+		else if (attackerDMax && condition.getMove().getAttackType().getIdentifier().equals("ice")) {
+			condition.setWeather("Hail");
+		}
+		else if (attackerDMax && condition.getMove().getAttackType().getIdentifier().equals("ghost")  && condition.getMove().getDamageClass().getIdentifier().equals("physical")) {
+			if (condition.getPokemon().equals(atkPokemon)) {
+				condition.changeYourBoost(-1);
+			}
+			else {
+				condition.changeOppBoost(-1);
+			}
+		}
+		else if (attackerDMax && condition.getMove().getAttackType().getIdentifier().equals("dark")  && condition.getMove().getDamageClass().getIdentifier().equals("special")) {
+			if (condition.getPokemon().equals(atkPokemon)) {
+				condition.changeYourBoost(-1);
+			}
+			else {
+				condition.changeOppBoost(-1);
+			}
+		}
+		else if (attackerDMax && condition.getMove().getAttackType().getIdentifier().equals("poison")  && condition.getMove().getDamageClass().getIdentifier().equals("special")) 
+		{
+			if (condition.getPokemon().equals(atkPokemon)) {
+				condition.changeOppBoost(1);
+			}
+			else {
+				condition.changeYourBoost(1);
+			}	
+		}
+		else if (attackerDMax && condition.getMove().getAttackType().getIdentifier().equals("fighting")  && condition.getMove().getDamageClass().getIdentifier().equals("physical")) 
+		{
+			if (condition.getPokemon().equals(atkPokemon)) {
+				condition.changeOppBoost(1);
+			}
+			else {
+				condition.changeYourBoost(1);
+			}	
+		}
+		return (int) (damage * finalModifier / 4096.0);
 	}
 		
 //	public int finalDamage(Condition condition, int baseDamage) {
@@ -1331,6 +1628,26 @@ public class APIService {
 		}
 		return false;
 	}
+	
+	
+	public int calculateSRDamage(Pokemon defPokemon) {
+		Type rock = this.getType("rock");
+		double modifier = defPokemon.getEffectivenessFrom(rock);
+		modifier /= 8.0;
+		return (int) Math.floor(modifier*defPokemon.getHP());
+		
+	}
+	
+	public boolean isMoveMultihit(Move m) {
+		String[] moves = {"arm-thrust", "bone-rush", "bonemerang", "bullet-seed", "double-hit", "double-iron-bash", "double-kick", "dragon-darts", "dual-chop", "dual-wingbeat", 
+		                           	"fury-attack", "fury-swipes", "gear-grind", "icicle-spear", "pin-missile", "rock-blast", "scale-shot", "surging-strikes", "tail-slap", "triple-axel", "triple-kick", "water-shuriken"};
+		for (int i =0; i < moves.length; i++) {
+			if (m.getIdentifier().equals(moves[i])){
+				return true;
+			}
+		}
+		return false;
+	}
 		
 	public int calculateSpeed(Pokemon pokemon, double boost, String weather, String terrain, boolean tailwind) {
 		
@@ -1352,17 +1669,10 @@ public class APIService {
 				|| (terrain.equals("Electric") && pokemon.getAbility().getIdentifier().equals("surge-surfer"))){
 			baseSpeed = baseSpeed * 2;
 		}
-		return baseSpeed;
+		return (int) Math.floor(baseSpeed * boost);
 	}
 	
 	public int healAfterTurn(Pokemon defPokemon, Condition condition, int currentHp) {
-		boolean defPokemonIsFoe;
-		if (defPokemon.equals(condition.getPokemon())) {
-			defPokemonIsFoe = true;
-		}
-		else {
-			defPokemonIsFoe=false;
-		}
 		if (!defPokemon.getItem().equals("safety-goggles") || !(defPokemon.getAbility().getIdentifier().equals("overcoat"))) {
 			if (condition.getWeather().equals("Sand") && !(defPokemon.getAbility().getIdentifier().equals("sand-rush") || defPokemon.getAbility().getIdentifier().equals("sand-force") || defPokemon.getAbility().getIdentifier().equals("sand-veil"))) {
 				if (!(defPokemon.isType("rock") || defPokemon.isType("steel") || defPokemon.isType("ground"))) {
@@ -1433,55 +1743,12 @@ public class APIService {
 			else if (defPokemon.getItem().equals("sticky-barb")) {
 				currentHp -= Math.max(1, Math.floor(defPokemon.getHP()/16));
 			}
-			else if (defPokemon.getItem().equals("sitrus-berry")) {
-				if (currentHp/defPokemon.getHP() <= 0.5) {
-					if (defPokemon.getAbility().getIdentifier().equals("ripen")) {
-						currentHp += Math.max(1, Math.floor(defPokemon.getHP()/2));
-					}
-					else {
-						currentHp += Math.max(1, Math.floor(defPokemon.getHP()/4));
-						if (defPokemon.getAbility().getIdentifier().equals("cheek-pouch")) {
-							currentHp += Math.max(1, Math.floor(defPokemon.getHP()/3));
-						}
-					}
- 
-				}
-			}
-			else if (defPokemon.getItem().equals("wiki-berry") || defPokemon.getItem().equals("aguav-berry") || defPokemon.getItem().equals("iapapa-berry") || defPokemon.getItem().equals("mago-berry") || defPokemon.getItem().equals("figy-berry")) {
-				if (condition.getGeneration() == 8) {
-					if (currentHp/defPokemon.getHP() <= 0.25 || (currentHp/defPokemon.getHP() <= 0.5 && defPokemon.getAbility().getIdentifier().equals("gluttony"))) {
-						currentHp += Math.max(1, Math.floor(defPokemon.getHP()/3));
-						if (defPokemon.getAbility().getIdentifier().equals("cheek-pouch")) {
-							currentHp += Math.max(1, Math.floor(defPokemon.getHP()/3));
-						}
-						else if (defPokemon.getAbility().getIdentifier().equals("ripen")) {
-							currentHp += Math.max(1, Math.floor(defPokemon.getHP()/3*2));
-						}
-					}
-				}
-				else if (condition.getGeneration() == 7) {
-					if (currentHp/defPokemon.getHP() <= 0.25 || (currentHp/defPokemon.getHP() <= 0.5 && defPokemon.getAbility().getIdentifier().equals("gluttony"))) {
-						currentHp += Math.max(1, Math.floor(defPokemon.getHP()/2));
-						if (defPokemon.getAbility().getIdentifier().equals("cheek-pouch")) {
-							currentHp += Math.max(1, Math.floor(defPokemon.getHP()/3));
-						}
-					}
-				}
-				else if (condition.getGeneration() <= 6) {
-					if (currentHp/defPokemon.getHP() <= 0.5) {
-						currentHp += Math.max(1, Math.floor(defPokemon.getHP()/8));
-						if (defPokemon.getAbility().getIdentifier().equals("cheek-pouch")) {
-							currentHp += Math.max(1, Math.floor(defPokemon.getHP()/3));
-						}
-					}
-				}
-				
-			}
+			currentHp = this.checkBerryUsage(defPokemon, condition, currentHp);
 		}
 		return currentHp;
 	}
 		
-	public int[] calcAllEVs(ArrayList<HashMap<String, Object>> atks, ArrayList<HashMap<String, Object>> defense, ArrayList<HashMap<String, Object>> spas, ArrayList<HashMap<String, Object>> spds, ArrayList<HashMap<String, Object>> speed, Nature orig, Nature suggested) {
+	public int[] calcAllEVs(ArrayList<HashMap<String, Object>> atks, ArrayList<HashMap<String, Object>> defense, ArrayList<HashMap<String, Object>> spas, ArrayList<HashMap<String, Object>> spds, ArrayList<HashMap<String, Object>> speed, Nature orig, Nature suggested, boolean isMaxHP) {
 		int total = 0;
 		int[] results = new int[7];
 		if (atks.size() > 0) {
@@ -1561,9 +1828,9 @@ public class APIService {
 			System.out.println(currentHp+" "+ currentSpD +" "+ currentDef);
 			for (int i = 0; i < spdStack.size(); i++) {
 				for (int j = 0; j < defStack.size(); j++) {
-					int testDef = (Integer) spdStack.get(i).get("special-defense");
+					int testSpd = (Integer) spdStack.get(i).get("special-defense");
 					int testHp = Math.max((Integer) spdStack.get(i).get("hp"), (Integer) defStack.get(j).get("hp"));
-					int testSpd = (Integer) defStack.get(j).get("defense");
+					int testDef = (Integer) defStack.get(j).get("defense");
 					System.out.println("Test: "+ testHp+" "+ testSpd +" "+ testDef);
 
 					if (totalStat > testDef+testHp+testSpd || (totalStat == testDef+testHp+testSpd && currentHp < testHp)) {
@@ -1598,11 +1865,21 @@ public class APIService {
 			for (int i = 0; i < spdStack.size(); i++) {
 				int testSpd = (Integer) spdStack.get(i).get("special-defense");
 				int testHp = (Integer) spdStack.get(i).get("hp");
-
-				if (totalStat > testHp+testSpd || (totalStat == testHp+testSpd && currentHp < testHp)) {
-					currentSpD = testSpd;
-					currentHp = testHp;
-					totalStat = testHp+testSpd;
+				if (!isMaxHP) {
+					if (totalStat > testHp+testSpd || (totalStat == testHp+testSpd && currentHp < testHp)) {
+						currentSpD = testSpd;
+						currentHp = testHp;
+						totalStat = testHp+testSpd;
+					}
+				}
+				else {
+					if (testSpd != currentSpD) {
+						break;
+					}
+					else {
+						currentSpD = testSpd;
+						currentHp = testHp;
+					}
 				}
 
 			}
@@ -1628,14 +1905,22 @@ public class APIService {
 			for (int i = 0; i < defStack.size(); i++) {
 				int testDef = (Integer) defStack.get(i).get("defense");
 				int testHp = (Integer) defStack.get(i).get("hp");
-
-				if (totalStat > testHp+testDef || (totalStat == testHp+testDef && currentHp < testHp)) {
-					currentDef = testDef;
-					currentHp = testHp;
-					totalStat = testHp+testDef;
-
+				if (!isMaxHP) {
+					if (totalStat > testHp+testDef || (totalStat == testHp+testDef && currentHp < testHp)) {
+						currentDef = testDef;
+						currentHp = testHp;
+						totalStat = testHp+testDef;
+					}
 				}
-
+				else {
+					if (testDef != currentDef) {
+						break;
+					}
+					else {
+						currentDef = testDef;
+						currentHp = testHp;
+					}
+				}
 			}
 			results[0] = currentHp;
 			results[2] = currentDef;
@@ -1660,12 +1945,18 @@ public class APIService {
 				if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("defense")) {
 					summary+="+ ";
 				}
+				else if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getDecreasedStat().getLabel().getIdentifier().equals("defense")) {
+					summary+="- ";
+				}
 				summary+= " Def ";
 			}
 			else {
 				summary += c.getPokemon().getStats().get(4).getEffort();
 				if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-defense")) {
 					summary+="+ ";
+				}
+				else if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getDecreasedStat().getLabel().getIdentifier().equals("special-defense")) {
+					summary+="- ";
 				}
 				summary+= " SpD ";
 			}
@@ -1675,6 +1966,9 @@ public class APIService {
 			if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("speed")) {
 				summary +="+ ";
 			}
+			else if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getDecreasedStat().getLabel().getIdentifier().equals("speed")) {
+				summary +="- ";
+			}
 			summary += " Speed ";
 		}
 		else if (c.getCond().equals("Survive") || c.getCond().equals("Survive 2")) {
@@ -1683,12 +1977,18 @@ public class APIService {
 				if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("attack")) {
 					summary+="+ ";
 				}
+				else if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getDecreasedStat().getLabel().getIdentifier().equals("attack")) {
+					summary+="- ";
+				}
 				summary+= " Atk ";
 			}
 			else {
 				summary += c.getPokemon().getStats().get(3).getEffort();
 				if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-attack")) {
 					summary+="+ ";
+				}
+				else if (!(c.getPokemon().getNature().getIncreasedStat().equals(c.getPokemon().getNature().getDecreasedStat())) && c.getPokemon().getNature().getDecreasedStat().getLabel().getIdentifier().equals("special-attack")) {
+					summary+="- ";
 				}
 				summary+= " SpA ";
 			}
@@ -1742,8 +2042,44 @@ public class APIService {
 	}
 	
 	
+	public int calcDamageByMove(Pokemon defPokemon, Condition c, int dmg) {
+		int damage = dmg;
+		if (this.isMoveMultihit(c.getMove())) {
+			for (int hits=1; hits <= c.getHits(); hits++) {
+				if (c.getMove().getIdentifier().equals("triple-axel")) {
+					c.getMove().setPower(20*hits);
+				}
+				damage += calculateDamage(c, defPokemon);
+				if (c.getCond().equals("2HKO") || c.getCond().equals("Knock Out")) {
+					damage=this.checkBerryUsage(c.getPokemon(), c, damage);
+				}
+				else {
+					damage=this.checkBerryUsage(defPokemon, c, damage);
+				}
+			}
+		}
+		else {
+			damage += calculateDamage(c, defPokemon);
+		}
+		return damage;
+	}
 	
-	public HashMap<String, Object> calculateEVs(Pokemon defPokemon, List<Condition> condition){
+	
+	public void resetCondition(Pokemon defPokemon, Condition c, HashMap<String, Object> origConds) {
+		for (Stat s: defPokemon.getStats()) {
+			s.setEffort(0);
+		}
+		c.setItemConsumed(false);
+		c.setYourBoost((String) origConds.get("orig-boost"));
+		c.setOppBoost((String) origConds.get("opp-boost"));
+		c.setGravity((boolean) origConds.get("gravity"));
+		c.setSmackDown((boolean) origConds.get("smack-down"));
+		c.setWeather((String) origConds.get("weather"));
+		c.setTerrain((String) origConds.get("terrain"));
+	}
+	
+	
+	public HashMap<String, Object> calculateEVs(Pokemon defPokemon, List<Condition> condition, boolean isMaxHP){
 
 		List<ArrayList<Stat>> lists = new ArrayList<ArrayList<Stat>>();
 		ArrayList<Object> conditionList = new ArrayList<Object>();
@@ -1761,13 +2097,22 @@ public class APIService {
 		Nature nat = defPokemon.getNature();
 		
 		for (Condition c: condition) {
+			HashMap<String, Object> origCond = new HashMap<String, Object>();
+			origCond.put("orig-boost", c.getRawBoost());
+			origCond.put("opp-boost", c.getRawOppBoost());
+			origCond.put("gravity", c.isGravity());
+			origCond.put("smack-down", c.isSmackDown());
+			origCond.put("weather", c.getWeather());
+			origCond.put("terrain", c.getTerrain());
+
 			c.setSummary(this.summarizeCondition(defPokemon, c));
-			List<LegacyMove> legMove = legacyRepo.getMoveWithGen(c.getMove().getIdentifier(), c.getGeneration());
-			if (legMove.size() > 0) {
-				c.getMove().setPower(legMove.get(0).getPower());
-			}
-			if (c.isZ() && c.getGeneration() == 7) {
-				
+			
+			
+			if (!c.getCond().equals("Outspeed")) {
+
+				if (c.isZ() && c.getGeneration() == 7) {
+					c.getMove().setEffectiveBP(this.convertToZ(c.getMove()));
+				}
 			}
 			//-----------------------------------------
 			//----------OHKO/2HKO LOGIC----------------
@@ -1852,12 +2197,10 @@ public class APIService {
 				}
 				for (int j = 0; j < 3; j++) {
 					Nature n = natures[j];
-					for (Stat s: defPokemon.getStats()) {
-						s.setEffort(0);
-					}
 					defPokemon.setNature(n);
 					boolean found = false;
 					for (int i = 0; i <= 252; i+= 4) {
+						this.resetCondition(defPokemon, c, origCond);
 						if (c.getMove().getDamageClass().getIdentifier().equals("physical")) {
 							if (c.getMove().getIdentifier().equals("body-press")) {
 								defPokemon.getStats().get(2).setEffort(i);
@@ -1869,12 +2212,30 @@ public class APIService {
 						else if (c.getMove().getDamageClass().getIdentifier().equals("special")) {
 							defPokemon.getStats().get(3).setEffort(i);
 						}
-						int dmg = calculateDamage(c, defPokemon);
+						int dmg = 0;
+						if (c.isStealthRock()) {
+							dmg = this.calculateSRDamage(c.getPokemon());
+						}
+						if (c.isOppDmax() && c.getGeneration() == 8) {
+							dmg *= 2;
+						}
+						dmg= this.calcDamageByMove(defPokemon, c, dmg);
+						if (c.getCond().equals("2HKO")) {
+							if (c.getGeneration() == 8 && c.isOppDmax()) {
+								dmg = (int) (c.getPokemon().getHP()*2*c.getHealth()/100) - this.healAfterTurn(defPokemon, c, (int) (c.getPokemon().getHP()*2*c.getHealth()/100) - dmg);
+								dmg = this.calcDamageByMove(defPokemon, c, dmg);
+							}
+							else {
+								dmg = (int) (c.getPokemon().getHP()*c.getHealth()/100) - this.healAfterTurn(defPokemon, c, (int) (c.getPokemon().getHP()*c.getHealth()/100) - dmg);
+								dmg = this.calcDamageByMove(defPokemon, c, dmg);
+							}
+						}	
+
 						//System.out.println("Damage: "+dmg+" Healed: "+ ((int) (c.getPokemon().getHP()*c.getHealth()/100-dmg) - this.healAfterTurn(c.getPokemon(), c, (int) (c.getPokemon().getHP()*c.getHealth()/100-dmg)))+" Total: "+((int) (c.getPokemon().getHP()*c.getHealth()/100-dmg)- (this.healAfterTurn(defPokemon, c, (int) (c.getPokemon().getHP()*c.getHealth()/100-dmg))-dmg))) ;
 						//System.out.println("SpA: "+i+" Nature: "+n.getIdentifierCleaned());
-						if (dmg >= c.getPokemon().getHP()*c.getHealth()/100 || (c.getCond().equals("2HKO") && this.healAfterTurn(c.getPokemon(), c, (int) (c.getPokemon().getHP()*c.getHealth()/100-dmg))-dmg <= 0)){
+						if (dmg >= c.getPokemon().getHP()*c.getHealth()/100 || (c.isOppDmax() && dmg >= c.getPokemon().getHP()*2*c.getHealth()/100 && c.getGeneration() == 8)){
 							HashMap<String, Object> x = new HashMap<String, Object>();
-							
+
 							if (c.getMove().getIdentifier().equals("body-press")) {
 								x.put("defense", i);
 							}
@@ -1900,7 +2261,7 @@ public class APIService {
 			//-----------------------------------------
 			//----------OUTSPEED LOGIC-----------------
 			//-----------------------------------------
-			else if (c.getCond().equals("Outspeed") || c.getCond().equals("Underspeed")) {
+			else if (c.getCond().equals("Outspeed")) {
 				ArrayList<HashMap<String, Object>> tObj = new ArrayList<HashMap<String, Object>> ();
 				Nature[] natures = new Nature[3];
 				if(personality.equals("undecided")) {
@@ -1929,17 +2290,15 @@ public class APIService {
 					
 				}
 				for (int j = 0; j < 3; j++) {
-					for (Stat s: defPokemon.getStats()) {
-						s.setEffort(0);
-					}
 					Nature n = natures[j];
 					defPokemon.setNature(n);
 					boolean found = false;
 					for (int i = 0; i <= 252; i+=4) {
+						this.resetCondition(defPokemon, c, origCond);
 						defPokemon.getStats().get(5).setEffort(i);
 						int speedA = calculateSpeed(defPokemon, c.getYourBoost(), c.getWeather(), c.getTerrain(), c.isYourTw()) ;
 						int speedB = calculateSpeed(c.getPokemon(), c.getOppBoost(), c.getWeather(), c.getTerrain(), c.isFoeTw());
-
+						System.out.println(speedA+ " " + speedB);
 
 						if (speedA> speedB) {
 							HashMap<String, Object> x = new HashMap<String, Object>();
@@ -2022,17 +2381,37 @@ public class APIService {
 					ArrayList<HashMap<String, Object>> storage = new ArrayList<HashMap<String, Object>>();
 					boolean found = false;
 					int maxHP = -1;
-					for (Stat s: defPokemon.getStats()) {
-						s.setEffort(0);
-					}
 					defPokemon.setNature(natures[i]);
 					for (int hp = 0; hp <= 252; hp+=4) {
+						this.resetCondition(defPokemon, c, origCond);
 						defPokemon.getStats().get(0).setEffort(hp);
-						int damage = calculateDamage(c, defPokemon);
-						//System.out.println("HP: "+ hp+" Def/SpD: 0"+" Nature: "+natures[i].getIdentifierCleaned());
+						int damage = 0;
+						if (c.isStealthRock()) {
+							damage = this.calculateSRDamage(defPokemon);
+						}
+						if (c.isSelfDmax() && c.getGeneration() == 8) {
+							damage *= 2;
+						}
+						damage = this.calcDamageByMove(defPokemon, c, damage);
+						System.out.println("T1: "+damage+ " HP: "+hp + " Def: "+ 0+" Nature: "+natures[i].getIdentifierCleaned());
+						if (c.getCond().equals("Survive 2")) {
+							if (c.isSelfDmax() && c.getGeneration() == 8) {
+								damage = (int) (defPokemon.getHP()*2*c.getHealth()/100) - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*2*c.getHealth()/100) - damage);
+								System.out.println("Pre-T2: "+damage);
+								damage = this.calcDamageByMove(defPokemon, c, damage);
+								System.out.println("T2: "+damage);
+							}
+							else {
+								damage = (int) (defPokemon.getHP()*c.getHealth()/100) - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100) - damage);
+								System.out.println("Pre-T2: "+damage);
+								damage = this.calcDamageByMove(defPokemon, c, damage);
+								System.out.println("T2: "+damage);
+							}
+						}	
+
+						//System.out.println("HP: "+ hp+" Def/SpD: 0 Nature: "+natures[i].getIdentifierCleaned());
 						//System.out.println(c.getPokemon().getIdentifierCleaned()+": "+ damage);
-						if (damage < defPokemon.getHP()*c.getHealth()/100 || 
-								(c.getCond().equals("Survive 2") && damage+ this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100-damage)) < defPokemon.getHP()*c.getHealth()/100)){
+						if (damage < defPokemon.getHP()*c.getHealth()/100 || (c.isSelfDmax() && c.getGeneration() == 8 && damage < defPokemon.getHP() *2* c.getHealth() / 100)){
 							found = true;
 							maxHP = hp;
 							HashMap<String, Object> sx = new HashMap<String, Object>();
@@ -2054,19 +2433,41 @@ public class APIService {
 					if (found) {
 						int lastDef = 0;
 						for (int hp = maxHP-4; hp >= 0; hp-=4) {
-							defPokemon.getStats().get(0).setEffort(hp);
 							for (int def = lastDef; def <= 252; def+=4) {
+								this.resetCondition(defPokemon, c, origCond);
+								defPokemon.getStats().get(0).setEffort(hp);
 								if (isMovePhysical(c.getMove())) {
 									defPokemon.getStats().get(2).setEffort(def);
 								}
 								else {
 									defPokemon.getStats().get(4).setEffort(def);
 								}
-								int damage = calculateDamage(c, defPokemon);
+								int damage = 0;
+								if (c.isStealthRock()) {
+									damage = this.calculateSRDamage(defPokemon);
+								}
+								if (c.isSelfDmax() && c.getGeneration() == 8) {
+									damage *= 2;
+								}
+								damage = this.calcDamageByMove(defPokemon, c, damage);
+								System.out.println("T1: "+damage+ " HP: "+hp + " Def: "+ def+" Nature: "+natures[i].getIdentifierCleaned());
+
+								if (c.getCond().equals("Survive 2")) {
+									if (c.isSelfDmax() && c.getGeneration() == 8) {
+										damage = (int) (defPokemon.getHP()*2*c.getHealth()/100) - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*2*c.getHealth()/100) - damage);
+										damage = this.calcDamageByMove(defPokemon, c, damage);
+									}
+									else {
+										damage = (int) (defPokemon.getHP()*c.getHealth()/100) - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100) - damage);
+										damage = this.calcDamageByMove(defPokemon, c, damage);
+									}
+									System.out.println("T2: "+damage);
+
+								}	
+
 								//System.out.println("HP: "+ hp+" Def/SpD: "+def+" Nature: "+natures[i].getIdentifierCleaned());
 								//System.out.println(c.getPokemon().getIdentifierCleaned()+": "+ damage);
-								if (damage < defPokemon.getHP()*c.getHealth()/100 ||
-										(c.getCond().equals("Survive 2") && damage*2 - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100-damage)) < defPokemon.getHP()*c.getHealth()/100)){
+								if (damage < defPokemon.getHP()*c.getHealth()/100){
 									lastDef = def;
 									HashMap<String, Object> sx = new HashMap<String, Object>();
 									sx.put("hp", hp);
@@ -2089,6 +2490,7 @@ public class APIService {
 						int lastHp = 252;
 						for (int def = 0; def <= 252; def+=4) {
 							for (int hp = lastHp; hp >= 0; hp -=4) {
+								this.resetCondition(defPokemon, c, origCond);
 								defPokemon.getStats().get(0).setEffort(hp);
 								if (isMovePhysical(c.getMove())) {
 									defPokemon.getStats().get(2).setEffort(def);
@@ -2096,13 +2498,36 @@ public class APIService {
 								else {
 									defPokemon.getStats().get(4).setEffort(def);
 								}
-								int damage = calculateDamage(c, defPokemon);
+								int damage = 0;
+								if (c.isStealthRock()) {
+									damage = this.calculateSRDamage(defPokemon);
+								}
+								if (c.isSelfDmax() && c.getGeneration() == 8) {
+									damage *= 2;
+								}
+								damage = this.calcDamageByMove(defPokemon, c, damage);
+								System.out.println("T1: "+damage+ " HP: "+hp + " Def: "+ def+" Nature: "+natures[i].getIdentifierCleaned());
+								if (c.getCond().equals("Survive 2")) {
+									if (c.isSelfDmax() && c.getGeneration() == 8) {
+										damage = (int) (defPokemon.getHP()*2*c.getHealth()/100) - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*2*c.getHealth()/100) - damage);
+										System.out.println("Pre-T2: "+damage);
+										damage = this.calcDamageByMove(defPokemon, c, damage);
+										System.out.println("T2: "+damage);
+									}
+									else {
+										damage = (int) (defPokemon.getHP()*c.getHealth()/100) - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100) - damage);
+										System.out.println("Pre-T2: "+damage);
+										damage = this.calcDamageByMove(defPokemon, c, damage);
+										System.out.println("T2: "+damage);
+									}
+									
+
+								}	
 
 								//System.out.println("HP: "+ hp+" Def/SpD: "+def+" Nature: "+natures[i].getIdentifierCleaned());
 								//System.out.println(c.getPokemon().getIdentifierCleaned()+": "+ damage);
 
-								if (damage >= defPokemon.getHP()*c.getHealth()/100 || 
-										(c.getCond().equals("Survive 2") && damage*2 - this.healAfterTurn(defPokemon, c, (int) (defPokemon.getHP()*c.getHealth()/100-damage)) >= defPokemon.getHP()*c.getHealth()/100)){
+								if (damage >= defPokemon.getHP()*c.getHealth()/100){
 									if (hp != 252) {
 										HashMap<String, Object> sx = new HashMap<String, Object>();
 										sx.put("hp", hp+4);
@@ -2240,6 +2665,8 @@ public class APIService {
 
 					}
 					int statToCompare;
+					System.out.println(conds.get(0)+ " "+conds.get(1)+" "+conds.get(2));
+					
 					if (conds.get(0) == null) {
 						ArrayList<HashMap<String, Object>> ss = (ArrayList<HashMap<String, Object>>) conds.get(1);
 						statToCompare = (Integer) ss.get(0).get("hp") + (Integer) ss.get(0).get(statToComp);
@@ -2359,7 +2786,7 @@ public class APIService {
 		int[] res;
 		do {
 			
-			res = calcAllEVs(attacks, defense, spas, spds, speed, nat, natureIfNull);
+			res = calcAllEVs(attacks, defense, spas, spds, speed, nat, natureIfNull, isMaxHP);
 			//System.out.println(Arrays.toString(res));
 			if (res[6] > 508) {
 				int highest = 0;
@@ -2500,20 +2927,32 @@ public class APIService {
 					else {
 						statMapList = (ArrayList<HashMap<String, Object>>) listOfNatures.get(0);
 					}
-						//if (isHPEnabled) > logic later
+
 					
 					for (int x = 0; x < statMapList.size(); x++) {
 						String statL = (i == 1 ? "defense" : "special-defense");
 						
-						if ((Integer) statMapList.get(x).get("hp") + (Integer) statMapList.get(x).get(statL) - (res[0] + res[i+1]) > highestDiff) {
-							highestDiff = (Integer) statMapList.get(x).get("hp") + (Integer) statMapList.get(x).get(statL) - (res[0] + res[i+1]);
-							statToBoost = statToTest[i];
-							boostArray[0] = (Integer) statMapList.get(x).get("hp") - res[0];
-							for (int z=0; z < i; z++) {
-								boostArray[z] = 0;
+						if (!isMaxHP) {
+							if ((Integer) statMapList.get(x).get("hp") + (Integer) statMapList.get(x).get(statL) - (res[0] + res[i+1]) > highestDiff) {
+								highestDiff = (Integer) statMapList.get(x).get("hp") + (Integer) statMapList.get(x).get(statL) - (res[0] + res[i+1]);
+								statToBoost = statToTest[i];
+								boostArray[0] = (Integer) statMapList.get(x).get("hp") - res[0];
+								for (int z=0; z < i; z++) {
+									boostArray[z] = 0;
+								}
+								boostArray[i+1] = (Integer) statMapList.get(x).get(statL) - res[1];
 							}
-							boostArray[i+1] = (Integer) statMapList.get(x).get(statL) - res[1];
-
+						}
+						else {
+							if ((Integer) statMapList.get(x).get("hp") + (Integer) statMapList.get(x).get(statL) - (res[0] + res[i+1]) > highestDiff) {
+								highestDiff = (Integer) statMapList.get(x).get("hp") + (Integer) statMapList.get(x).get(statL) - (res[0] + res[i+1]);
+								statToBoost = statToTest[i];
+								boostArray[0] = (Integer) statMapList.get(x).get("hp") - res[0];
+								for (int z=0; z < i; z++) {
+									boostArray[z] = 0;
+								}
+								boostArray[i+1] = (Integer) statMapList.get(x).get(statL) - res[1];
+							}
 						}
 					}
 				}	

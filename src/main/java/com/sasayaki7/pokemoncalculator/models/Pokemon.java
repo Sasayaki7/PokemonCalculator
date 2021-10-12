@@ -26,6 +26,8 @@ public class Pokemon {
 	@OneToMany(mappedBy="pokemon", fetch=FetchType.LAZY)
 	private List<Stat> stats;
 	
+	@OneToMany(mappedBy="pokemon", fetch=FetchType.LAZY)
+	private List<LegacyType> legacyTypes;
 
 	@ManyToMany(fetch=FetchType.LAZY)
 	@JoinTable(
@@ -42,8 +44,11 @@ public class Pokemon {
 		inverseJoinColumns=@JoinColumn(name="type_id")
 	)
 	private List<Type> types;
-	
+	@Transient
+	private List<Type> oldTypes;
 	private int weight;
+	
+
 	
 	@Transient
 	private int level;
@@ -73,9 +78,15 @@ public class Pokemon {
 	public void setIdentifier(String identifier) {
 		this.identifier = identifier;
 	}
-	
-	
-	
+		
+	public List<LegacyType> getLegacyTypes() {
+		return legacyTypes;
+	}
+
+	public void setLegacyTypes(List<LegacyType> legacyTypes) {
+		this.legacyTypes = legacyTypes;
+	}
+
 	public int getWeight() {
 		return weight;
 	}
@@ -96,22 +107,26 @@ public class Pokemon {
 			return identifier.replace("-", "");
 		}
 		else if (identifier.indexOf("mr-mime") != -1) {
-			return identifier.replace("mr-mime", "mrmime").replace('-', ' ').replace("-", "");
+			return identifier.replace("mr-mime", "mrmime");
 		}
 		else if (identifier.indexOf("mega-x") != -1) {
-			return identifier.replace("mega-x", "megax").replace('-', ' ');
+			return identifier.replace("mega-x", "megax");
 		}
 		else if (identifier.indexOf("mega-y") != -1) {
-			return identifier.replace("mega-y", "megay").replace('-', ' ');
+			return identifier.replace("mega-y", "megay");
 		}
 		else if (identifier.indexOf("rapid-strike") != -1) {
-			return identifier.replace("rapid-strike", "rapidstrike").replace('-', ' ');
+			return identifier.replace("rapid-strike", "rapidstrike");
 		}
 		else if (identifier.indexOf("single-strike") != -1) {
-			return identifier.replace("single-strike", "singlestrike").replace('-', ' ');
+			return identifier.replace("single-strike", "singlestrike");
+		}
+		else if (identifier.indexOf("-incarnate") != -1) {
+			return identifier.replace("-incarnate", "");
+
 		}
 		else {
-			return identifier.replace('-', ' ');
+			return identifier;
 		}
 	}
 	
@@ -175,6 +190,14 @@ public class Pokemon {
 	public void setTypes(List<Type> types) {
 		this.types = types;
 	}
+	
+	public List<Type> getOldTypes() {
+		return oldTypes;
+	}
+
+	public void setOldTypes(List<Type> oldTypes) {
+		this.oldTypes = oldTypes;
+	}
 
 	public String getItem() {
 		return item;
@@ -197,10 +220,10 @@ public class Pokemon {
 	}
 	
 	public int getAtk() {
-		if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("attack")) {
+		if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("attack")) {
 			return (int) Math.floor(this.getStats().get(1).getStatVal()*1.1);
 		}
-		else if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("attack")) {
+		else if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("attack")) {
 			return (int) Math.floor(this.getStats().get(1).getStatVal()*0.9);
 		}
 		else {
@@ -209,10 +232,10 @@ public class Pokemon {
 	}
 	
 	public int getDef() {
-		if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("defense")) {
+		if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("defense")) {
 			return (int) Math.floor(this.getStats().get(2).getStatVal()*1.1);
 		}
-		else if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("defense")) {
+		else if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("defense")) {
 			return (int) Math.floor(this.getStats().get(2).getStatVal()*0.9);
 		}
 		else {
@@ -222,10 +245,10 @@ public class Pokemon {
 	
 	
 	public int getSpA() {
-		if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-attack")) {
+		if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-attack")) {
 			return (int) Math.floor(this.getStats().get(3).getStatVal()*1.1);
 		}
-		else if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("special-attack")) {
+		else if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("special-attack")) {
 			return (int) Math.floor(this.getStats().get(3).getStatVal()*0.9);
 		}
 		else {
@@ -235,10 +258,10 @@ public class Pokemon {
 	
 	
 	public int getSpD() {
-		if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-defense")) {
+		if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("special-defense")) {
 			return (int) Math.floor(this.getStats().get(4).getStatVal()*1.1);
 		}
-		else if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("special-defense")) {
+		else if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("special-defense")) {
 			return (int) Math.floor(this.getStats().get(4).getStatVal()*0.9);
 		}
 		else {
@@ -248,10 +271,10 @@ public class Pokemon {
 	
 	
 	public int getSpe() {
-		if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("speed")) {
+		if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getIncreasedStat().getLabel().getIdentifier().equals("speed")) {
 			return (int) Math.floor(this.getStats().get(5).getStatVal()*1.1);
 		}
-		else if (this.getNature() != null && this.getNature().getDecreasedStat()!= this.getNature().getIncreasedStat() && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("speed")) {
+		else if (this.getNature() != null && (!(this.getNature().getDecreasedStat().getLabel().getIdentifier().equals(this.getNature().getIncreasedStat().getLabel().getIdentifier()))) && this.getNature().getDecreasedStat().getLabel().getIdentifier().equals("speed")) {
 			return (int) Math.floor(this.getStats().get(5).getStatVal()*0.9);
 		}
 		else {
@@ -261,9 +284,18 @@ public class Pokemon {
 	
 	
 	public boolean isType(String name) {
-		for (Type t: this.types) {
-			if (t.isTypeName(name)) {
-				return true;
+		if (this.oldTypes != null && this.oldTypes.size() > 0) {
+			for (Type t: this.oldTypes) {
+				if (t.isTypeName(name)) {
+					return true;
+				}
+			}
+		}
+		else {
+			for (Type t: this.types) {
+				if (t.isTypeName(name)) {
+					return true;
+				}
 			}
 		}
 		return false;
@@ -281,15 +313,30 @@ public class Pokemon {
 
 	public double getEffectivenessFrom(Type t) {
 		double init = 1.0;
-		for (Type x: this.types) {
-			if (x.getEffectivenessFrom(t) == 200) {
-				init *= 2;
+		if (this.oldTypes != null && this.oldTypes.size() > 0) {
+			for (Type x: this.oldTypes) {
+				if (x.getEffectivenessFrom(t) == 200) {
+					init *= 2;
+				}
+				else if (x.getEffectivenessFrom(t) == 50) {
+					init *= 0.5;
+				}
+				else if (x.getEffectivenessFrom(t) == 0) {
+					init = 0;
+				}
 			}
-			else if (x.getEffectivenessFrom(t) == 50) {
-				init *= 0.5;
-			}
-			else if (x.getEffectivenessFrom(t) == 0) {
-				init = 0;
+		}
+		else {
+			for (Type x: this.types) {
+				if (x.getEffectivenessFrom(t) == 200) {
+					init *= 2;
+				}
+				else if (x.getEffectivenessFrom(t) == 50) {
+					init *= 0.5;
+				}
+				else if (x.getEffectivenessFrom(t) == 0) {
+					init = 0;
+				}
 			}
 		}
 		return init;

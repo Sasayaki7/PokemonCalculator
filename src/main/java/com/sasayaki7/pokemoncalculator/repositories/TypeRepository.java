@@ -20,4 +20,5 @@ public interface TypeRepository extends CrudRepository<Type, Long>{
 	public List<Type> findAllImmunities(Type t);
 
 	public Optional<Type> findByIdentifier(String type);
+	public Optional<Type> findById(Long id);
 }

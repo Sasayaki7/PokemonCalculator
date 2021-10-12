@@ -8,6 +8,7 @@ public class Condition {
 	private String weather;
 	private Move move;
 	private int generation;
+	private int hits;
 	private boolean screens;
 	private double oppBoost;
 	private double yourBoost;
@@ -32,9 +33,13 @@ public class Condition {
 	private boolean charge=false;
 	private boolean gravity=false;
 	private boolean flashFire=false;
-	private boolean z;
-	private boolean selfDmax;
-	private boolean oppDmax;
+	private boolean z=false;
+	private boolean selfDmax=false;
+	private boolean oppDmax=false;
+	private boolean itemConsumed=false;
+	private boolean smackDown=false;
+	private boolean stealthRock=false;
+	private boolean maxHp = false;
 
 	
 	public Condition() {
@@ -75,6 +80,36 @@ public class Condition {
 		return weather;
 	}
 
+	
+	public boolean isSmackDown() {
+		return smackDown;
+	}
+
+
+	public void setSmackDown(boolean smackDown) {
+		this.smackDown = smackDown;
+	}
+
+
+	public int getHits() {
+		return hits;
+	}
+
+
+	public void setHits(int hits) {
+		this.hits = hits;
+	}
+
+
+	public boolean isItemConsumed() {
+		return itemConsumed;
+	}
+
+
+	public void setItemConsumed(boolean itemConsumed) {
+		this.itemConsumed = itemConsumed;
+	}
+
 
 	public void setWeather(String weather) {
 		this.weather = weather;
@@ -86,8 +121,28 @@ public class Condition {
 	}
 
 
+	public boolean isStealthRock() {
+		return stealthRock;
+	}
+
+
+	public void setStealthRock(boolean stealthRock) {
+		this.stealthRock = stealthRock;
+	}
+
+
 	public void setScreens(boolean screens) {
 		this.screens = screens;
+	}
+
+	
+	public boolean isMaxHp() {
+		return maxHp;
+	}
+
+
+	public void setMaxHp(boolean maxHp) {
+		this.maxHp = maxHp;
 	}
 
 
@@ -154,7 +209,24 @@ public class Condition {
 		}
 	}
 
+	public void changeYourBoost(int drop) {
+		int newBoost = Integer.parseInt(this.rawBoost)+drop;
+		String newStrBoost = String.valueOf(newBoost);
+		if (newBoost > 0) {
+			newStrBoost = "+"+newStrBoost;
+		}
+		this.setYourBoost(newStrBoost);
+	}
 
+	public void changeOppBoost(int drop) {
+		int newBoost = Integer.parseInt(this.rawOppBoost)+drop;
+		String newStrBoost = String.valueOf(newBoost);
+		if (newBoost > 0) {
+			newStrBoost = "+"+newStrBoost;
+		}
+		this.setOppBoost(newStrBoost);
+	}
+	
 	public double getYourBoost() {
 		return yourBoost;
 	}

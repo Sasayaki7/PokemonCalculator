@@ -6,6 +6,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 @Table(name="moves")
 @Entity
@@ -18,6 +19,12 @@ public class Move {
 	private Integer power;
 	private Integer maxMovePower;
 	private Integer effectId;
+	
+	@Transient
+	private Integer effectiveBP=0;
+	
+	@Transient
+	private Type attackType=null;
 	
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="damage_class_id")	
@@ -35,6 +42,9 @@ public class Move {
 	}
 
 	public Integer getPower() {
+		if (this.effectiveBP > 0) {
+			return this.effectiveBP;
+		}
 		return power;
 	}
 
@@ -45,6 +55,7 @@ public class Move {
 	public Integer getEffectId() {
 		return effectId;
 	}
+	
 
 	public void setEffectId(Integer effectId) {
 		this.effectId = effectId;
@@ -57,6 +68,17 @@ public class Move {
 	public void setDamageClass(DamageClass damageClass) {
 		this.damageClass = damageClass;
 	}
+	
+	public Type getAttackType() {
+		if (attackType == null) {
+			return this.type;
+		}
+		return attackType;
+	}
+
+	public void setAttackType(Type attackType) {
+		this.attackType = attackType;
+	}
 
 	public MoveTarget getTarget() {
 		return target;
@@ -64,6 +86,14 @@ public class Move {
 
 	public void setTarget(MoveTarget target) {
 		this.target = target;
+	}
+	
+	public Integer getEffectiveBP() {
+		return effectiveBP;
+	}
+
+	public void setEffectiveBP(Integer effectiveBP) {
+		this.effectiveBP = effectiveBP;
 	}
 
 	public Type getType() {

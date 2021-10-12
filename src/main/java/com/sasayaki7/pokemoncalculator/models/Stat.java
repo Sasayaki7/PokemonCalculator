@@ -100,8 +100,7 @@ public class Stat {
 			return (int)(Math.floor(((2*this.baseStat+this.iv+Math.floor(this.effort/4))*this.pokemon.getLevel())/100)+this.pokemon.getLevel()+10);
 		}
 		else {
-
-			return (int)((Math.floor(((2*this.baseStat+this.iv+Math.floor(this.effort/4))*this.pokemon.getLevel())/100)+5)*this.getNatureBoost(this.pokemon.getNature()));
+			return (int)((Math.floor(((2*this.baseStat+this.iv+Math.floor(this.effort/4))*this.pokemon.getLevel())/100)+5));
 		}
 	}
 

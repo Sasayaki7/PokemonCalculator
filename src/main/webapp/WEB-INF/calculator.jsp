@@ -38,6 +38,13 @@
 			</div>
 			
 			<div class="input-row">
+				<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
+					<input type="checkbox" class="btn-check" id="max-hp" name="max-hp" autocomplete="off">
+					<label class="btn btn-outline-secondary" for="max-hp">Maximize HP</label>
+				</div>
+		   	</div>
+			
+			<div class="input-row">
 			   	<div class="btn-group" role="group" aria-label="Basic radio toggle button group">
 				  <input type="radio" class="btn-check" name="single-double" id="single-1" value="single" checked>
 				  <label class="btn btn-outline-secondary" for="single-1">Singles</label>
@@ -99,7 +106,7 @@
 			   		<select name="nature-pokemon">
 			   			<option value="undecided" <c:if test="${errors and not defPokemonError and defPokemon.nature.identifier eq 'undecided' }">selected </c:if>>Not important</option>
 			   			<c:forEach var="nature" items="${natures}">
-			   				<option value="${nature.identifier}" <c:if test="${errors and not defPokemonError and defPokemon.nature.identifier eq nature.identifier }">selected </c:if>><c:out value="${nature.identifier}"/></option>
+			   				<option value="${nature.identifier}" <c:if test="${errors and not defPokemonError and defPokemon.nature.identifier eq nature.identifier }">selected </c:if>><c:out value="${nature.getIdentifierCleaned()}"/></option>
 			   			</c:forEach>
 			   		</select>
 		   		</div>
@@ -125,10 +132,17 @@
 					   					</c:forEach>
 					   				</select>
 					   				<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
-				   						<input type="checkbox" class="btn-check" name="dynamax-self-${loopvar.index+1}" autocomplete="off">
+				   						<input type="checkbox" class="btn-check" id="dynamax-self-${loopvar.index+1}" name="dynamax-self-${loopvar.index+1}" autocomplete="off">
 										<label class="btn btn-outline-secondary" for="dynamax-self-${loopvar.index+1}">Self D-Max</label>
 									</div>
-					   				
+					   				<div class="boost-selector">
+						   				<label for="boost-you-${loopvar.index+1}">Your boosts:</label>
+						   				<select name="boost-you-${loopvar.index+1}">
+								   			<c:forEach var="boost" items="${boosts}">
+								   				<option value="${boost}"<c:if test="${boost eq cond.getRawBoost()}"> selected</c:if>><c:out value="${boost}"/></option>
+								   			</c:forEach>
+								   		</select>
+									</div>
 					   			</div>
 					   			<div class="cell">
 						   			<div class="opp-pokemon-cell">
@@ -184,7 +198,7 @@
 					   					<label for="nature-${loopvar.index+1}">Nature:</label>
 						   				<select name="nature-${loopvar.index+1}">
 					   						<c:forEach var="nature" items="${natures}" varStatus="loop">
-					   							<option value="${nature.identifier}" <c:if test="${nature.identifier eq cond.getPokemon().getNature().getIdentifier()}">selected</c:if>><c:out value="${nature.identifier}"/></option>
+					   							<option value="${nature.identifier}" <c:if test="${nature.identifier eq cond.getPokemon().getNature().getIdentifier()}">selected</c:if>><c:out value="${nature.getIdentifierCleaned()}"/></option>
 					   						</c:forEach>
 					   					</select>
 				   					</div>
@@ -207,12 +221,16 @@
 					   					>
 					   				   	<div class="item-autocomplete"></div>
 				   					</div>
+				   					<div class="input-row invisible">
+				   						<label for="hits-${loopvar.index+1 }">Hits:</label>
+				   						<input type="number" class="short-number" name="hits-${loopvar.index+1 }" value="1"/>
+				   					</div>
 				   					<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
 					   					<input type="checkbox" class="btn-check" id="crit-${loopvar.index+1}" name="crit-${loopvar.index}" <c:if test="${cond.isCritical()}"> checked</c:if> autocomplete="off">
 										<label class="btn btn-outline-secondary" for="crit-${loopvar.index+1}">Crit</label>
-										<input type="checkbox" class="btn-check" name="dynamax-opp-${loopvar.index+1}" autocomplete="off">
+										<input type="checkbox" class="btn-check" id="dynamax-opp-${loopvar.index+1}" name="dynamax-opp-${loopvar.index+1}" autocomplete="off">
 										<label class="btn btn-outline-secondary" for="dynamax-opp-${loopvar.index+1}">Opp DMax</label>
-										<input type="checkbox" class="btn-check" name="z-${loopvar.index+1}" autocomplete="off">
+										<input type="checkbox" class="btn-check" id="z-${loopvar.index+1}" name="z-${loopvar.index+1}" autocomplete="off">
 										<label class="btn btn-outline-secondary" for="z-${loopvar.index+1}">Z</label>
 						
 									</div>
@@ -228,89 +246,88 @@
 					   				<div class="defev invisible">
 					   					<div class="display-ev-iv">
 					   						<h6>HP</h6>
-						   					<label for="hp-${loopvar.index+1}">EV:</label>
-						   					<input class="short-number" type="number" name="hp-${loopvar.index+1}" min="0" max="252" 
-						   					<c:choose>
-						   						<c:when test="${not empty cond.getPokemon()}"> value="${cond.getPokemon().getStats().get(0).getEffort()}" </c:when> 
-						   						<c:otherwise> value="0"</c:otherwise>
-						   					</c:choose>/>
-						   					<label for="hp-iv-${loopvar.index+1}">IV:</label>
-						   					<input class="short-number" type="number" name="hp-iv-${loopvar.index+1}" min="0" max="31"
-						   					<c:choose>
-						   						<c:when test="${not empty cond.getPokemon()}"> value="${cond.getPokemon().getStats().get(0).getIv()}" </c:when> 
-						   						<c:otherwise> value="31"</c:otherwise>
-						   					</c:choose>/>/>
+					   						<div class="input-row">
+							   					<label for="hp-${loopvar.index+1}">EV:</label>
+							   					<input class="short-number" type="number" name="hp-${loopvar.index+1}" min="0" max="252" 
+							   					<c:choose>
+							   						<c:when test="${not empty cond.getPokemon()}"> value="${cond.getPokemon().getStats().get(0).getEffort()}" </c:when> 
+							   						<c:otherwise> value="0"</c:otherwise>
+							   					</c:choose>/>
+							   					<label for="hp-iv-${loopvar.index+1}">IV:</label>
+							   					<input class="short-number" type="number" name="hp-iv-${loopvar.index+1}" min="0" max="31"
+							   					<c:choose>
+							   						<c:when test="${not empty cond.getPokemon()}"> value="${cond.getPokemon().getStats().get(0).getIv()}" </c:when> 
+							   						<c:otherwise> value="31"</c:otherwise>
+							   					</c:choose>/>/>
+						   					</div>
 					   					</div>
 					
 					   					<div class="display-ev-iv">
 					   						<h6>Def/Spd</h6>
-					   						<label for="def-${loopvar.index+1}">EV:</label>
-					   						<input class="short-number" type="number" name="def-${loopvar.index+1}" min="0" max="252" 
-					   						<c:choose>
-						   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(2).getEffort() gt 0}"> value="${cond.getPokemon().getStats().get(2).getEffort()}" </c:when>
-						   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(4).getEffort() gt 0}"> value="${cond.getPokemon().getStats().get(4).getEffort()}" </c:when>
-						   						<c:otherwise> value="0"</c:otherwise>
-						   					</c:choose>/>
-					   						<label for="def-iv-${loopvar.index+1}">IV:</label>
-					   						<input class="short-number" type="number" name="def-iv-${loopvar.index+1}" min="0" max="31"
-					   						<c:choose>
-						   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(2).getIv() lt 31}"> value="${cond.getPokemon().getStats().get(2).getIv()}" </c:when>
-						   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(4).getIv() lt 31}"> value="${cond.getPokemon().getStats().get(4).getIv()}" </c:when>
-						   						<c:otherwise> value="31"</c:otherwise>
-						   					</c:choose>
-					   						/>
+					   						<div class="input-row">
+						   						<label for="def-${loopvar.index+1}">EV:</label>
+						   						<input class="short-number" type="number" name="def-${loopvar.index+1}" min="0" max="252" 
+						   						<c:choose>
+							   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(2).getEffort() gt 0}"> value="${cond.getPokemon().getStats().get(2).getEffort()}" </c:when>
+							   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(4).getEffort() gt 0}"> value="${cond.getPokemon().getStats().get(4).getEffort()}" </c:when>
+							   						<c:otherwise> value="0"</c:otherwise>
+							   					</c:choose>/>
+						   						<label for="def-iv-${loopvar.index+1}">IV:</label>
+						   						<input class="short-number" type="number" name="def-iv-${loopvar.index+1}" min="0" max="31"
+						   						<c:choose>
+							   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(2).getIv() lt 31}"> value="${cond.getPokemon().getStats().get(2).getIv()}" </c:when>
+							   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(4).getIv() lt 31}"> value="${cond.getPokemon().getStats().get(4).getIv()}" </c:when>
+							   						<c:otherwise> value="31"</c:otherwise>
+							   					</c:choose>
+						   						/>
+					   						</div>
 					   					</div>
 					   				</div>
 					   				<div class="invisible offev">
 					   					<div class="display-ev-iv">
 					   						<h6>Atk/SpA</h6>
-					   						<label for="atk-${loopvar.index+1}">EV:</label>
-					   						<input class="short-number" type="number" name="atk-${loopvar.index+1}" min="0" max="252"
-					   						<c:choose>
-						   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(1).getEffort() gt 0}"> value="${cond.getPokemon().getStats().get(1).getEffort()}" </c:when>
-						   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(3).getEffort() gt 0}"> value="${cond.getPokemon().getStats().get(3).getEffort()}" </c:when>
-						   						<c:otherwise> value="0"</c:otherwise>
-						   					</c:choose>
-					   						/>
-					   						<label for="atk-iv-${loopvar.index+1}">IV:</label>
-					   						<input class="short-number" type="number" name="atk-iv-${loopvar.index+1}" min="0" max="31"
-					   						<c:choose>
-						   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(1).getIv() lt 31}"> value="${cond.getPokemon().getStats().get(1).getIv()}" </c:when>
-						   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(3).getIv() lt 31}"> value="${cond.getPokemon().getStats().get(3).getIv()}" </c:when>
-						   						<c:otherwise> value="31"</c:otherwise>
-						   					</c:choose>
-					   						/>
+					   						<div class="input-row">
+						   						<label for="atk-${loopvar.index+1}">EV:</label>
+						   						<input class="short-number" type="number" name="atk-${loopvar.index+1}" min="0" max="252"
+						   						<c:choose>
+							   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(1).getEffort() gt 0}"> value="${cond.getPokemon().getStats().get(1).getEffort()}" </c:when>
+							   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(3).getEffort() gt 0}"> value="${cond.getPokemon().getStats().get(3).getEffort()}" </c:when>
+							   						<c:otherwise> value="0"</c:otherwise>
+							   					</c:choose>
+						   						/>
+						   						<label for="atk-iv-${loopvar.index+1}">IV:</label>
+						   						<input class="short-number" type="number" name="atk-iv-${loopvar.index+1}" min="0" max="31"
+						   						<c:choose>
+							   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(1).getIv() lt 31}"> value="${cond.getPokemon().getStats().get(1).getIv()}" </c:when>
+							   						<c:when test="${not empty cond.getPokemon() and cond.getPokemon().getStats().get(3).getIv() lt 31}"> value="${cond.getPokemon().getStats().get(3).getIv()}" </c:when>
+							   						<c:otherwise> value="31"</c:otherwise>
+							   					</c:choose>
+						   						/>
+					   						</div>
 					   					</div>
 					   				</div>
 					   				<div class="speedev">
 					   					<div class="display-ev-iv">
 					   						<h6>Speed</h6>
-					   						<label for="speed-${loopvar.index+1}">EV:</label>
-					   						<input class="short-number" type="number" name="speed-${loopvar.index+1}" min="0" max="252"
-					   						<c:choose>
-						   						<c:when test="${not empty cond.getPokemon()}"> value="${cond.getPokemon().getStats().get(5).getEffort()}" </c:when>
-						   						<c:otherwise> value="0"</c:otherwise>
-						   					</c:choose>
-					   						/>
-					   						<label for="speed-iv-${loopvar.index+1}">IV:</label>
-					   						<input class="short-number" type="number" name="speed-iv-${loopvar.index+1}" min="0" max="31"
-					   						<c:choose>
-						   						<c:when test="${not empty cond.getPokemon()}"> value="${cond.getPokemon().getStats().get(5).getIv()}" </c:when>
-						   						<c:otherwise> value="31"</c:otherwise>
-						   					</c:choose>
-					   						/>
+					   						<div class="input-row">
+						   						<label for="speed-${loopvar.index+1}">EV:</label>
+						   						<input class="short-number" type="number" name="speed-${loopvar.index+1}" min="0" max="252"
+						   						<c:choose>
+							   						<c:when test="${not empty cond.getPokemon()}"> value="${cond.getPokemon().getStats().get(5).getEffort()}" </c:when>
+							   						<c:otherwise> value="0"</c:otherwise>
+							   					</c:choose>
+						   						/>
+						   						<label for="speed-iv-${loopvar.index+1}">IV:</label>
+						   						<input class="short-number" type="number" name="speed-iv-${loopvar.index+1}" min="0" max="31"
+						   						<c:choose>
+							   						<c:when test="${not empty cond.getPokemon()}"> value="${cond.getPokemon().getStats().get(5).getIv()}" </c:when>
+							   						<c:otherwise> value="31"</c:otherwise>
+							   					</c:choose>
+						   						/>
+					   						</div>
 					   					</div>
-					   				</div>
-					   			</div>
-					   			<div class="cell">	
-					   				<div class="boost-selector">
-						   				<label for="boost-you-${loopvar.index+1}">Your boosts:</label>
-						   				<select name="boost-you-${loopvar.index+1}">
-								   			<c:forEach var="boost" items="${boosts}">
-								   				<option value="${boost}"<c:if test="${boost eq cond.getRawBoost()}"> selected</c:if>><c:out value="${boost}"/></option>
-								   			</c:forEach>
-								   		</select>
-									</div>
+					   				</div>	
+
 								   	<div class="boost-selector">
 						   				<label for="boost-opp-${loopvar.index+1}">Opp boosts:</label>
 						   				<select name="boost-opp-${loopvar.index+1}">
@@ -320,7 +337,6 @@
 									   	</select>
 									</div>
 								</div>
-				   				<img id="expand-button" class='add-button' src="/assets/plus.png" alt="plus button" onClick="expandRow(this)"/>
 				   				<div class="cell">
 				   					<div>
 				   						<h4>Field Effects</h4>
@@ -347,16 +363,27 @@
 										  <label class="btn btn-outline-secondary" for="foe-tailwind-${loopvar.index+1}">Tailwind (Foe)</label>
 										</div>
 										<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
-										  <input type="checkbox" class="btn-check" <c:if test="${cond.isHelpingHand()}">checked</c:if> id="hh-${loopvar.index+1}" autocomplete="off">
+										  <input type="checkbox" class="btn-check" name="hh-${loopvar.index+1}" <c:if test="${cond.isHelpingHand()}">checked</c:if> id="hh-${loopvar.index+1}" autocomplete="off">
 										  <label class="btn btn-outline-secondary" for="hh-${loopvar.index+1}">Helping Hand</label>
-										  <input type="checkbox" class="btn-check" id="flower-gift-${loopvar.index+1}" <c:if test="${cond.isFlowerGift()}">checked</c:if> autocomplete="off">
+										  <input type="checkbox" class="btn-check" name="flower-gift-${loopvar.index+1}" id="flower-gift-${loopvar.index+1}" <c:if test="${cond.isFlowerGift()}">checked</c:if> autocomplete="off">
 										  <label class="btn btn-outline-secondary" for="flower-gift-${loopvar.index+1}">Flower Gift</label>
 										  
-										  <input type="checkbox" class="btn-check" id="power-spot-${loopvar.index+1}" <c:if test="${cond.isPowerSpot()}">checked</c:if> autocomplete="off">
+										  <input type="checkbox" class="btn-check" name="power-spot-${loopvar.index+1}" id="power-spot-${loopvar.index+1}" <c:if test="${cond.isPowerSpot()}">checked</c:if> autocomplete="off">
 										  <label class="btn btn-outline-secondary" for="power-spot-${loopvar.index+1}">Power Spot</label>
 										  
-										  <input type="checkbox" class="btn-check" id="battery-${loopvar.index+1}" <c:if test="${cond.isBattery()}">checked</c:if> autocomplete="off">
+										  <input type="checkbox" class="btn-check" name="battery-${loopvar.index+1}" id="battery-${loopvar.index+1}" <c:if test="${cond.isBattery()}">checked</c:if> autocomplete="off">
 										  <label class="btn btn-outline-secondary" for="battery-${loopvar.index+1}">Battery</label>
+										</div>
+										<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
+										  	<input type="checkbox" class="btn-check" name="stealth-rock-${loopvar.index+1}" id="stealth-rock-${loopvar.index+1}" <c:if test="${cond.isStealthRock()}">checked</c:if> autocomplete="off">
+										  	<label class="btn btn-outline-secondary" for="stealth-rock-${loopvar.index+1}">Stealth Rock</label>
+										
+										  	<input type="checkbox" class="btn-check" name="gravity-${loopvar.index+1}" id="gravity-${loopvar.index+1}" <c:if test="${cond.isGravity()}">checked</c:if> autocomplete="off">
+										  	<label class="btn btn-outline-secondary" for="gravity-${loopvar.index+1}">Gravity</label>
+										  
+											<input type="checkbox" class="btn-check" name="smack-down-${loopvar.index+1}" id="smack-down-${loopvar.index+1}" <c:if test="${cond.isSmackDown()}">checked</c:if> autocomplete="off">
+											<label class="btn btn-outline-secondary" for="smack-down-${loopvar.index+1}">Smack Down</label>
+
 										</div>
 			
 				   					</div>
@@ -373,6 +400,18 @@
 				   						<option value="${condition}"><c:out value="${condition }"/></option>
 				   					</c:forEach>
 				   				</select>
+				   				<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
+			   						<input type="checkbox" class="btn-check" id="dynamax-self-1" name="dynamax-self-1" autocomplete="off">
+									<label class="btn btn-outline-secondary" for="dynamax-self-1">Self D-Max</label>
+								</div>
+								<div class="boost-selector">
+					   				<label for="boost-you-1">Your boosts:</label>
+					   				<select name="boost-you-1">
+							   			<c:forEach var="boost" items="${boosts}">
+							   				<option value="${boost}"<c:if test="${boost eq '0'}"> selected</c:if>><c:out value="${boost}"/></option>
+							   			</c:forEach>
+							   		</select>
+								</div>
 				   			</div>
 				   			<div class="cell">
 					   			<div class="opp-pokemon-cell">
@@ -409,7 +448,7 @@
 				   					<label for="nature-1">Nature:</label>
 					   				<select name="nature-1">
 				   						<c:forEach var="nature" items="${natures}" varStatus="loop">
-				   							<option value="${nature.identifier}" <c:if test="${loop.first}">selected</c:if>><c:out value="${nature.identifier}"/></option>
+				   							<option value="${nature.identifier}" <c:if test="${loop.first}">selected</c:if>><c:out value="${nature.getIdentifierCleaned()}"/></option>
 				   						</c:forEach>
 				   					</select>
 			   					</div>
@@ -424,10 +463,18 @@
 				   					<input type="text" class="medium-text" name="move-1" oninput="autoComplete(this)">
 				   				   	<div class="item-autocomplete"></div>
 			   					</div>
-			   					<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
-				   					<input type="checkbox" class="btn-check" id="crit-1" name="crit-1" autocomplete="off">
-									<label class="btn btn-outline-secondary" for="crit-1">Crit</label>
-								</div>
+			   						<div class="input-row invisible">
+				   						<label for="hits-1">Hits:</label>
+				   						<input type="number" class="short-number" name="hits-1" value="1"/>
+				   					</div>
+				   					<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
+					   					<input type="checkbox" class="btn-check" id="crit-1" name="crit-1" autocomplete="off">
+										<label class="btn btn-outline-secondary" for="crit-1">Crit</label>
+										<input type="checkbox" class="btn-check" id="dynamax-opp-1" name="dynamax-opp-1" autocomplete="off">
+										<label class="btn btn-outline-secondary" for="dynamax-opp-1">Opp DMax</label>
+										<input type="checkbox" class="btn-check" id="z-1" name="z-1" autocomplete="off">
+										<label class="btn btn-outline-secondary" for="z-1">Z</label>
+									</div>
 								<label for="status">Status:</label>
 				   				<select name="status-1">
 				   				<c:forEach var="stat" items="${status}" varStatus="loop">
@@ -439,48 +486,46 @@
 				   				<div class="defev invisible">
 				   					<div class="display-ev-iv">
 				   						<h6>HP</h6>
-					   					<label for="hp-1">EV:</label>
-					   					<input class="short-number" type="number" name="hp-1" min="0" max="252" value="0"/>
-					   					<label for="hp-iv-1">IV:</label>
-					   					<input class="short-number" type="number" name="hp-iv-1" min="0" max="31" value="31"/>
+				   						<div class="input-row">
+					   						<label for="hp-1">EV:</label>
+					   						<input class="short-number" type="number" name="hp-1" min="0" max="252" value="0"/>
+					   						<label for="hp-iv-1">IV:</label>
+					   						<input class="short-number" type="number" name="hp-iv-1" min="0" max="31" value="31"/>
+				   						</div>
 				   					</div>
 				
 				   					<div class="display-ev-iv">
 				   						<h6>Def/Spd</h6>
-				   						<label for="def-1">EV:</label>
-				   						<input class="short-number" type="number" name="def-1" min="0" max="252" value="0"/>
-				   						<label for="def-iv-1">IV:</label>
-				   						<input class="short-number" type="number" name="def-iv-1" min="0" max="31" value="31"/>
+				   						<div class="input-row">
+				   							<label for="def-1">EV:</label>
+				   							<input class="short-number" type="number" name="def-1" min="0" max="252" value="0"/>
+				   							<label for="def-iv-1">IV:</label>
+				   							<input class="short-number" type="number" name="def-iv-1" min="0" max="31" value="31"/>
+				   						</div>
 				   					</div>
 				   				</div>
 				   				<div class="invisible offev">
 				   					<div class="display-ev-iv">
 				   						<h6>Atk/SpA</h6>
-				   						<label for="atk-1">EV:</label>
-				   						<input class="short-number" type="number" name="atk-1" min="0" max="252" value="0"/>
-				   						<label for="atk-iv-1">IV:</label>
-				   						<input class="short-number" type="number" name="atk-iv-1" min="0" max="31" value="31"/>
+				   						<div class="input-row">
+				   							<label for="atk-1">EV:</label>
+				   							<input class="short-number" type="number" name="atk-1" min="0" max="252" value="0"/>
+				   							<label for="atk-iv-1">IV:</label>
+				   							<input class="short-number" type="number" name="atk-iv-1" min="0" max="31" value="31"/>
+				   						</div>
 				   					</div>
 				   				</div>
 				   				<div class="speedev">
 				   					<div class="display-ev-iv">
 				   						<h6>Speed</h6>
-				   						<label for="speed-1">EV:</label>
-				   						<input class="short-number" type="number" name="speed-1" min="0" max="252" value="0"/>
-				   						<label for="speed-iv-1">IV:</label>
-				   						<input class="short-number" type="number" name="speed-iv-1" min="0" max="31" value="31"/>
+				   						<div class="input-row">
+				   							<label for="speed-1">EV:</label>
+				   							<input class="short-number" type="number" name="speed-1" min="0" max="252" value="0"/>
+				   							<label for="speed-iv-1">IV:</label>
+				   							<input class="short-number" type="number" name="speed-iv-1" min="0" max="31" value="31"/>
+				   						</div>
 				   					</div>
 				   				</div>
-				   			</div>
-				   			<div class="cell">	
-				   				<div class="boost-selector">
-					   				<label for="boost-you-1">Your boosts:</label>
-					   				<select name="boost-you-1">
-							   			<c:forEach var="boost" items="${boosts}">
-							   				<option value="${boost}"<c:if test="${boost eq '0'}"> selected</c:if>><c:out value="${boost}"/></option>
-							   			</c:forEach>
-							   		</select>
-								</div>
 							   	<div class="boost-selector">
 					   				<label for="boost-opp-1">Opp boosts:</label>
 					   				<select name="boost-opp-1">
@@ -490,7 +535,6 @@
 								   	</select>
 								</div>
 							</div>
-			   				<img id="expand-button" class='add-button' src="/assets/plus.png" alt="plus button" onClick="expandRow(this)"/>
 			   				<div class="cell">
 			   					<div>
 			   						<h4>Field Effects</h4>
@@ -518,17 +562,28 @@
 									  <label class="btn btn-outline-secondary" for="foe-tailwind-1">Tailwind (Foe)</label>				
 									</div>
 									<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
-									  <input type="checkbox" class="btn-check" id="hh-1" autocomplete="off">
+									  <input type="checkbox" class="btn-check" name="hh-1" id="hh-1" autocomplete="off">
 									  <label class="btn btn-outline-secondary" for="hh-1">Helping Hand</label>
 									
-									  <input type="checkbox" class="btn-check" id="flower-gift-1" autocomplete="off">
+									  <input type="checkbox" class="btn-check" name="flower-gift-1" id="flower-gift-1" autocomplete="off">
 									  <label class="btn btn-outline-secondary" for="flower-gift-1">Flower Gift</label>
 									  
-									  <input type="checkbox" class="btn-check" id="power-spot-1" autocomplete="off">
+									  <input type="checkbox" class="btn-check" name="power-spot-1" id="power-spot-1" autocomplete="off">
 									  <label class="btn btn-outline-secondary" for="power-spot-1">Power Spot</label>
 									  
-									  <input type="checkbox" class="btn-check" id="battery-1" autocomplete="off">
+									  <input type="checkbox" class="btn-check" name="battery-1" id="battery-1" autocomplete="off">
 									  <label class="btn btn-outline-secondary" for="battery-1">Battery</label>
+									</div>
+									<div class="btn-group btn-group-sm" role="group" aria-label="Basic checkbox toggle button group">
+									  <input type="checkbox" class="btn-check" name="stealth-rock-1" id="stealth-rock-1" autocomplete="off">
+									  <label class="btn btn-outline-secondary" for="stealth-rock-1">Stealth Rock</label>
+									
+									  <input type="checkbox" class="btn-check" name="gravity-1" id="gravity-1" autocomplete="off">
+									  <label class="btn btn-outline-secondary" for="gravity-1">Gravity</label>
+									  
+									  <input type="checkbox" class="btn-check" name="smack-down-1" id="smack-down-1" autocomplete="off">
+									  <label class="btn btn-outline-secondary" for="smack-down-1">Smack Down</label>
+
 									</div>
 		
 			   					</div>

@@ -9,7 +9,7 @@ import javax.persistence.Table;
 
 @Table(name="move_past_generation")
 @Entity
-public class LegacyMove {
+public class LegacyMove{
 
 	@Id
 	private Long id;
@@ -17,6 +17,8 @@ public class LegacyMove {
 	private String identifier;
 	private Integer power;
 	private Integer generation_id;
+	private Integer effectId;
+
 	
 	public Integer getGeneration_id() {
 		return generation_id;
@@ -88,6 +90,14 @@ public class LegacyMove {
 
 	public void setTarget(MoveTarget target) {
 		this.target = target;
+	}
+
+	public Integer getEffectId() {
+		return effectId;
+	}
+
+	public void setEffectId(Integer effectId) {
+		this.effectId = effectId;
 	}
 	
 	

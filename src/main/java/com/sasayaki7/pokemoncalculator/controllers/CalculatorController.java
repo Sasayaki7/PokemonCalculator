@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sasayaki7.pokemoncalculator.models.Ability;
 import com.sasayaki7.pokemoncalculator.models.Condition;
 import com.sasayaki7.pokemoncalculator.models.Item;
+import com.sasayaki7.pokemoncalculator.models.LegacyType;
 import com.sasayaki7.pokemoncalculator.models.Move;
 import com.sasayaki7.pokemoncalculator.models.Nature;
 import com.sasayaki7.pokemoncalculator.models.Pokemon;
@@ -35,7 +36,7 @@ public class CalculatorController {
 		
 	
 	private static final String[] boosts = {"+6", "+5", "+4", "+3", "+2", "+1", "0", "-1", "-2", "-3", "-4", "-5", "-6"};
-	private static final String[] conditionsdef = {"Outspeed", "Survive", "Knock Out", "Underspeed", "2HKO", "Survive 2"};
+	private static final String[] conditionsdef = {"Outspeed", "Survive", "Survive 2", "Knock Out", "2HKO", };
 	private static final String[] weathers = {"None", "Rain", "Sun", "Sand", "Hail"};
 	private static final String[] terrains = {"None", "Misty", "Grassy", "Electric", "Psychic"};
 	private static final String[] status = {"Healthy", "Burn", "Paralyze", "Freeze", "Poison", "Toxic"};
@@ -87,7 +88,7 @@ public class CalculatorController {
 	@PostMapping("/")
 	public String calculateResult(HttpServletRequest request, Model model) {
 		boolean valid = true;
-		
+		int generation = Integer.parseInt(request.getParameter("generation"));
 		
 		Pokemon defendingPokemon = apiServ.getPokemon(apiServ.lowerStringRemoveDashes(request.getParameter("calcpokemon")));
 		if (defendingPokemon == null) {
@@ -105,6 +106,13 @@ public class CalculatorController {
 			}
 			else {
 				defendingPokemon.setNature(apiServ.getNature(request.getParameter("nature-pokemon")));
+			}
+			if (defendingPokemon.getLegacyTypes().size() > 0) {
+				for (LegacyType lt: defendingPokemon.getLegacyTypes()) {
+					if (lt.getGenerationId() <= generation){
+						defendingPokemon.getOldTypes().add(apiServ.getType(lt.getTypeId()));
+					}
+				}
 			}
 		}
 		int counter = 1;
@@ -127,12 +135,21 @@ public class CalculatorController {
 				condPokemon.setNature(apiServ.getNature(apiServ.lowerStringRemoveDashes(request.getParameter("nature-"+counter))));
 				condPokemon.getStats().get(5).setIv(Integer.parseInt(request.getParameter("speed-iv-"+counter)));
 				condPokemon.getStats().get(5).setEffort(Integer.parseInt(request.getParameter("speed-"+counter)));			
+				if (condPokemon.getLegacyTypes().size() > 0) {
+					for (LegacyType lt: condPokemon.getLegacyTypes()) {
+						if (lt.getGenerationId() <= Integer.parseInt(request.getParameter("generation"))){
+							condPokemon.getOldTypes().add(apiServ.getType(lt.getTypeId()));
+						}
+					}
+				}
+				
 				Move move = apiServ.getMove(apiServ.lowerStringRemoveDashes(request.getParameter("move-"+counter)));
 				if (move == null) {
 					if (!(condition.getCond().equals("Outspeed") || condition.getCond().equals("Underspeed"))) {
 						model.addAttribute("move"+counter+"Error", true);
 						valid = false;
 					}
+					
 				}
 				else {
 					if (move.getDamageClass().getIdentifier().equals("physical")) {
@@ -147,8 +164,14 @@ public class CalculatorController {
 						condPokemon.getStats().get(4).setIv(Integer.parseInt(request.getParameter("def-iv-"+counter)));
 						condPokemon.getStats().get(4).setEffort(Integer.parseInt(request.getParameter("def-"+counter)));
 					}
+					condition.setMove(move);
+
+					if (apiServ.getLegacyMove(move.getIdentifier(), generation) != null) {
+						move.setEffectiveBP(apiServ.getLegacyMove(move.getIdentifier(), generation).getPower());
+					}
 				}
 			}
+			
 			condition.setDoubles(request.getParameter("single-double").equals("double"));
 			condition.setPokemon(condPokemon);
 			condition.setGeneration(Integer.parseInt(request.getParameter("generation")));
@@ -156,6 +179,9 @@ public class CalculatorController {
 			condition.setYourBoost(request.getParameter("boost-you-"+counter));
 			condition.setWeather(request.getParameter("weather-"+counter));
 			condition.setTerrain(request.getParameter("terrain-"+counter));
+			condition.setHits(Integer.parseInt(request.getParameter("hits-"+counter)));
+			
+			
 			if (request.getParameter("z-"+counter) != null) {
 				condition.setZ(true);
 			}
@@ -191,8 +217,19 @@ public class CalculatorController {
 			if (request.getParameter("battery-"+counter) != null){
 				condition.setBattery(true);
 			}
+			
+			if (request.getParameter("stealth-rock-"+counter) != null){
+				condition.setStealthRock(true);
+			}
+			
+			if (request.getParameter("gravity-"+counter) != null){
+				condition.setGravity(true);
+			}
+			
+			if (request.getParameter("smack-down-"+counter) != null){
+				condition.setSmackDown(true);
+			}
 
-			condition.setMove(apiServ.getMove(apiServ.lowerStringRemoveDashes(request.getParameter("move-"+counter))));
 			condition.setHealth(Double.parseDouble(request.getParameter("hp-percentage-"+counter)));
 			counter++;
 			conditions.add(condition);
@@ -210,7 +247,7 @@ public class CalculatorController {
 			return "calculator.jsp";
 		}
 		
-		HashMap<String, Object> result = apiServ.calculateEVs(defendingPokemon, conditions);
+		HashMap<String, Object> result = apiServ.calculateEVs(defendingPokemon, conditions, request.getParameter("max-hp") != null);
 		ArrayList<Object[]> statListX = new ArrayList<Object[]>();
 		String[] labels = {"HP", "Attack", "Defense", "Spec. Attack", "Spec. Defense", "Speed", "EVs Remaining"};
 		for (int i = 0; i < 7; i++) {

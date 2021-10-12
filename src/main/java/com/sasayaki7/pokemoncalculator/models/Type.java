@@ -61,8 +61,10 @@ public class Type {
 	private List<TypeEfficacy> targetedFrom;
 	
 	
+	
 	public Type() {
 	}
+	
 
 	public Long getId() {
 		return id;
