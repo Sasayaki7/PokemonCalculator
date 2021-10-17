@@ -599,6 +599,15 @@
 	   		<button class="btn btn-primary submit-button">Calculate</button>
    		</div>
    	</form>
+   	
+   	
+   	<br/>
+   	<br/>
+   	<div class="footer">
+   		<p class="error">This project is not complete and may have inaccuracies due to incomplete understanding of mechanics.</p>
+		<p class="error">Gyro ball and Electro Ball are not implemented.</p>
+		<p>2021 Sasayaki7</p>
+   	</div>
    	<script src="js/formManage.js"></script>
 </body>
 </html>

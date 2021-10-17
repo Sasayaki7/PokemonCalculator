@@ -250,11 +250,14 @@ public class CalculatorController {
 		HashMap<String, Object> result = apiServ.calculateEVs(defendingPokemon, conditions, request.getParameter("max-hp") != null);
 		ArrayList<Object[]> statListX = new ArrayList<Object[]>();
 		String[] labels = {"HP", "Attack", "Defense", "Spec. Attack", "Spec. Defense", "Speed", "EVs Remaining"};
+		String[] abbrev = {"HP", "Atk", "Def", "SpA", "SpD", "Spe", "Total"};
+
 		for (int i = 0; i < 7; i++) {
-			Object[] tempX = new Object[2];
+			Object[] tempX = new Object[3];
 			int[] tempArr = (int[]) result.get("resultEVarr");
 			tempX[0] = tempArr[i];
 			tempX[1] = labels[i];
+			tempX[2] = abbrev[i];
 			statListX.add(tempX);
 		}
 		ArrayList<Condition> goodCond = new ArrayList<Condition>();

@@ -179,3 +179,8 @@ input{
 	margin: auto;
 }
 
+.footer{
+	margin:  3px auto;
+	text-align: center;
+	font-size: 9pt;
+}

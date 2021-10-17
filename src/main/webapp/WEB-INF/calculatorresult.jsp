@@ -87,11 +87,11 @@
 		<p><c:out value="${pokemon.getIdentifierCleaned()}"/> <c:if test="${not empty pokemon.item}">@ <c:out value="${pokemon.getItemCleaned()}"/></c:if></p>
 		<p>Ability: <c:out value="${pokemon.ability.getIdentifierCleaned()}"/></p>
 		<c:set var="test" value="${false}"/>
-		<p>EVs: <c:forEach var="result" items="${calcedstat}">
-			<c:if test="${result[0] gt 0}">
+		<p>EVs: <c:forEach var="result" items="${calcedstat}" varStatus="owo">
+			<c:if test="${result[0] gt 0 and not owo.last}">
 				<c:if test="${test}">/</c:if>
-				<c:out value="${result[0]} "/>
-				<c:set var="test" value="${false}"/>
+				<c:out value="${result[0]} ${result[2]}"/>
+				<c:set var="test" value="${true}"/>
 			</c:if>
 			</c:forEach>
 		</p>
@@ -107,10 +107,10 @@
 			<p>Ability: <c:out value="${pokemon.ability.getIdentifierCleaned()}"/></p>
 			<c:set var="test" value="${false}"/>
 			<p>EVs: <c:forEach var="result" items="${suggestionEV}" varStatus="mish">
-				<c:if test="${result gt 0 and not mish.last}">
+				<c:if test="${result gt 0 and (not mish.last)}">
 					<c:if test="${test}">/</c:if>
 					<c:out value="${result} "/>
-					<c:set var="test" value="${false}"/>
+					<c:set var="test" value="${true}"/>
 				</c:if>
 				</c:forEach>
 			</p>
